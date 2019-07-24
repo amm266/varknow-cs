@@ -73,7 +73,4 @@ public class Logger {
         writer.flush();
     }*/
 
-
-
-
 }

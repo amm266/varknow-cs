@@ -9,12 +9,9 @@ import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.logger.Logger;
 import game.logger.Read;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
-
 public class MainPanel extends JPanel  {
     public JTextField jTextField0 = new JTextField();
     public JTextField jTextField1 = new JTextField();
@@ -174,10 +171,6 @@ public class MainPanel extends JPanel  {
                                 TimeOfBombShoot = System.currentTimeMillis();
 
                             }
-
-
-
-
                     }
                 }
 

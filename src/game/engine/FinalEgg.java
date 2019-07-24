@@ -47,8 +47,8 @@ public class FinalEgg implements Animatable {
                 TimeOfFinalEggShoot = System.currentTimeMillis();
             }
             if (!Objects.isNull(finalEggShoots)) {
-                for (FinalEggShoot finalEggShoot : finalEggShoots) {
-
+                for (int i=0;i<finalEggShoots.size ();i++) {
+                    FinalEggShoot finalEggShoot = finalEggShoots.get ( i );
                         finalEggShoot.paint(g2);
                         finalEggShoot.move();
 
@@ -56,14 +56,16 @@ public class FinalEgg implements Animatable {
                     if(Math.abs(finalEggShoot.getX()- (Rocket.LastXRocket+5))<5 & Math.abs(finalEggShoot.getY()- (Rocket.LastYRocket+5))<5){
                         Rocket.HeartOfRocket--;
                         finalEggShoots.remove(finalEggShoot);
+                        i--;
                     }
-                    if(finalEggShoot.getX() < 0 | finalEggShoot.getX()>2000 | finalEggShoot.getY()<0 | finalEggShoot.getY()>1100)
-                        finalEggShoots.remove(finalEggShoot);
+                    if(finalEggShoot.getX() < 0 | finalEggShoot.getX()>2000 | finalEggShoot.getY()<0 | finalEggShoot.getY()>1100) {
+                        finalEggShoots.remove ( finalEggShoot );
+                        i--;
+                    }
                 }
             }
         }
     }
-
     @Override
     public void move() {
         if (HeightOfEgg < 75)
@@ -71,7 +73,6 @@ public class FinalEgg implements Animatable {
 
 
     }
-
     public void shoot() {
         synchronized (finalEggShoots) {
             int r = 25;
@@ -87,8 +88,6 @@ public class FinalEgg implements Animatable {
             }
         }
     }
-
-
     public int Random (int n) {
         Random rand = new Random();
 
