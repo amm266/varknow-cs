@@ -79,7 +79,6 @@ public class MainPanel extends JPanel implements KeyListener {
             Jtextfieldinit(jTextField2,250,440,480,40,this);
             Jtextfieldinit(jTextField3,250,490,480,40,this);
         }
-
     }
     @Override
     protected void paintComponent(Graphics g) {
@@ -92,7 +91,6 @@ public class MainPanel extends JPanel implements KeyListener {
             ChickCounter =0;
         }*/
     }
-
         if(state == STATE.FIrstMenu){
             FirstMenu.paint((Graphics2D) g);
             MenuState = FirstMenu.MenuState();
@@ -140,8 +138,7 @@ public class MainPanel extends JPanel implements KeyListener {
                         x = e.getX();
                         y = e.getY();
                     if(state == STATE.Game) {
-                        game.getRocket().setX(e.getX());
-                        game.getRocket().setY(e.getY());
+                        game.getRocket().setLocation ( e.getX (),e.getY () );
                     }
                 }
             });
@@ -229,9 +226,7 @@ public class MainPanel extends JPanel implements KeyListener {
             return false;
         }
     }
-
     public static  int  ShootCounter(){
-
         return ShootCounter;
     }
         public JTextField Jtextfieldinit(JTextField jTextField,int x,int y,int width,int height ,MainPanel Mainpanel){

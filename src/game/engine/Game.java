@@ -13,9 +13,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
-
-
-public class Game implements Animatable {
+public class Game{
 
 	public int LastXBomb;
 	public int LastYBomb;
@@ -26,18 +24,14 @@ public class Game implements Animatable {
 	private int a = 0;
 	private int b = 0;
 	private int velocity;
-	private Sound sound;
 	private int HeightOfBomb = 3000000;
 	private int WidthOfBomb;
 	private boolean BombIsExploded = false;
 	public BufferedImage bufferedImageHeart;
 	public BufferedImage bufferedImagebackground;
 	private BufferedImage bufferedImageBomb;
-	public static long TimeOfBackgrounddMove = 0;
 	private String NumberOfShoot = "" + MainPanel.NumberOfShoot;
 	public Rocket rocket;
-	public BombShoot bombShoot;
-	private BufferedImage bufferedImage;
 	private final ArrayList<Tir> tirs = new ArrayList<> ( );
 	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
 	private final ArrayList<Egg> eggs = new ArrayList<> ( );
@@ -50,7 +44,6 @@ public class Game implements Animatable {
 	public static int NumberOfChickensG4 = 70;
 	public int G1Transform = 0;
 	public FinalEgg finalEgg;
-	public Egg egg;
 	public int NumberOfEgg;
 	private long EggTime = System.currentTimeMillis ( );
 	public static BufferedImage SmartEggbufferedImage;
@@ -76,9 +69,7 @@ public class Game implements Animatable {
 		THIRD,
 		FINAL
 	}
-
 	;
-
 	public static enum LEVEL {
 		ONE,
 		TWO,
@@ -86,9 +77,7 @@ public class Game implements Animatable {
 		FOUR,
 		Win
 	}
-
 	;
-
 	public static enum GROUP {
 		ONE,
 		TWO,
@@ -96,29 +85,20 @@ public class Game implements Animatable {
 		FOUR,
 		FINAL
 	}
-
 	;
 	public static Game.STAGE stage = STAGE.FIRST;
 	public static Game.LEVEL level = LEVEL.ONE;
 	public static Game.GROUP group = GROUP.ONE;
-
-
 	public Game ( int width , int height ) {
 		this.width = width;
 		this.height = height;
 		rocket = new Rocket ( width / 2 - 50 , height - 200 );
 		ImagesInit ( );
 	}
-
-	@Override
 	public void paint ( Graphics2D g2 ) {
-		if ( Rocket.getHart () <= 0 ){
-			System.out.println ("loooooooooooose" );
-		}
 		if ( level == LEVEL.Win ) {
 			try {
 				bufferedImage_Win = ImageIO.read ( new File ( "resources/win.png" ) );
-
 			} catch (IOException ex) {
 				ex.printStackTrace ( );
 			}
@@ -139,465 +119,37 @@ public class Game implements Animatable {
 			GameInformation ( g2 );
 			BombShooting ( g2 );
 		}
-		if ( ! Objects.isNull ( eggs ) ) {
-			for ( int k =0;k<eggs.size ();k++ ) {
-				Egg egg = eggs.get ( k );
-				if ( CheckQuancidence ( egg ) ) {
-					System.out.println ("fosh bad" );
-					eggs.remove ( egg );
-					Rocket.decreaseHart ( 1 );
-					System.out.println ("harts of rocket  "+Rocket.getHart () );
-					k--;
-				}
-				if ( egg.getY ( ) > 1100 ) {
-					eggs.remove ( egg );
-					System.out.println ("fosh khob" );
-					k--;
-				}
-			}
-		}
-		for ( int i = 0;i<tirs.size ();i++ ) {
-			Tir tir = tirs.get ( i );
-			if ( tir.getX ( ) > 2000 | tir.getY ( ) > 1100 | tir.getX ( ) < 0 | tir.getY ( ) < 0 ){
-				tirs.remove ( tir );
-				i--;
-			}
-			if ( CheckQuancidence ( tir ) & stage == STAGE.FINAL ) {
-				finalEgg.AmountOfLife--;
-				tirs.remove ( tir );
-			}
-			for ( int j=0;j<chickens.size ();j++ ) {
-				Chicken chicken = chickens.get ( j );
-				if ( CheckQuancidence ( chicken , tir ) ) {
-					if ( ! Objects.isNull ( chickens ) ) {
-						if ( Random ( 100 ) <= 6 ) {
-
-							Strong ( chicken.getX ( ) , chicken.getY ( ) );
-						}
-						if ( Random ( 100 ) <= 6 ) {
-							Coin ( chicken.getX ( ) , chicken.getY ( ) );
-						}
-
-
-					}
-					chickens.remove ( chicken );
-					j--;
-					tirs.remove ( tir );
-				}
-			}
-		}
-
 		for ( Tir tir : tirs ) {
 			drawTir ( tir , g2 );
 		}
-
-		if ( ! Objects.isNull ( coins ) ) {
-			for ( int i =0;i<coins.size ();i++ ) {
-				Coin coin = coins.get ( i );
-				coin.paint ( g2 );
-				if ( coin.getY ( ) > 1100 ) {
-					coins.remove ( coin );
-					i--;
-				}
-				if ( CheckQuancidence ( coin ) ) {
-					Rocket.setScore ( Rocket.getScore ()+2 );
-					coins.remove ( coin );
-					i--;
-				}
-
-			}
-			//System.out.println(Rocket.Score);
+		for ( Coin coin : coins ){
+			coin.paint ( g2 );
 		}
-
-		if ( ! Objects.isNull ( stronges ) ) {
-			for ( int i=0;i<stronges.size ();i++ ) {
-				Stronge stronge = stronges.get ( i );
-				stronge.paint ( g2 );
-				if ( stronge.getY ( ) > 1100 ) {
-					stronges.remove ( stronge );
-					i--;
-				}
-				if ( CheckQuancidence ( stronge ) ) {
-					Rocket.setStrong ( Rocket.getStrong ()+1 );
-					Tir.StrongOfTir++;
-					stronges.remove ( stronge );
-					i--;
-				}
-			}
+		for ( Stronge stronge : stronges ) {
+			stronge.paint ( g2 );
 		}
-		if ( ! Objects.isNull ( eggs ) ) {
-			for ( Egg egg : eggs ) {
-				egg.paint ( g2 );
-			}
+		for ( Egg egg : eggs ) {
+			egg.paint ( g2 );
 		}
-
-
-		if ( ( System.currentTimeMillis ( ) - EggTime ) >= 1000 & ! Objects.isNull ( chickens ) ) {
-			for ( Chicken chicken : chickens ) {
-				if ( Random ( 50 ) <= 5 ) {
-					Egg ( 1 , chicken.getX ( ) , chicken.getY ( ) );
-				}
-				EggTime = System.currentTimeMillis ( );
-
-			}
-		}
-
-
 		for ( Chicken chicken : chickens ) {
 			chicken.paint ( g2 );
-
-			if ( stage == STAGE.FIRST & NumberOfChickensG1 <= 30 & G1Transform < 30 ) {
-				chicken.SetX ( 60 * ( G1Transform % 6 ) + 80 );
-				chicken.SetY ( 75 * ( G1Transform / 6 ) + 100 );
-				G1Transform++;
-				chicken.SetMiddelOfChickenX ( 0 );
-			}
 		}
-
-
-		if ( stage == STAGE.FIRST ) {
-			if ( chickens.size ( ) > 0 ) {
-				NumberOfChickensG1 = chickens.size ( );
-				NumberOfEgg = NumberOfChickensG1;
-			}
-			if ( chickens.size ( ) <= 1 ) {
-				stage = STAGE.SECOND;
-				chickens.clear ( );
-				//NumberOfChickensG1=40;
-			}
-		}
-		if ( stage == STAGE.SECOND ) {
-			//second stage
-			//System.out.println("stage2");
-			if ( chickens.size ( ) > 0 ) {
-				NumberOfChickensG2 = chickens.size ( );
-				NumberOfEgg = NumberOfChickensG2;
-			}
-			if ( NumberOfChickensG2 <= 1 ) {
-				stage = STAGE.THIRD;
-				chickens.clear ( );
-				//NumberOfChickensG2=40;
-			}
-		}
-		if ( stage == STAGE.THIRD ) {
-			//third stage
-			//System.out.println("stage3");
-			if ( chickens.size ( ) > 0 ) {
-				NumberOfChickensG3 = chickens.size ( );
-				NumberOfEgg = NumberOfChickensG3;
-			}
-			if ( chickens.size ( ) <= 1 ) {
-				stage = STAGE.FINAL;
-				chickens.clear ( );
-				//NumberOfChickensG3=40;
-			}
-		}
-
 		if ( stage == STAGE.FINAL ) {
 			//final stage
 			System.out.println ( "stagefinal" );
-
 			finalEgg.paint ( g2 );
-			if ( finalEgg.AmountOfLife <= 1 ) {
-				// stage=STAGE.FIRST;
-				if ( level == LEVEL.FOUR ) {
-					level = LEVEL.Win;
-				}
-				if ( level == LEVEL.THREE ) {
-					level = LEVEL.FOUR;
-				}
-				if ( level == LEVEL.TWO ) {
-					level = LEVEL.THREE;
-				}
-				if ( level == LEVEL.ONE ) {
-					level = LEVEL.TWO;
-				}
-				NumberOfBomb++;
-				finalEgg.Exictance = false;
-			}
 		}
 		rocket.paint ( g2 );
-		if ( MainPanel.statePauseMenu == true ) {
-			pauseMenu.paint ( ( Graphics2D ) g2 );
+		if ( MainPanel.statePauseMenu ) {
+			pauseMenu.paint ( g2 );
 		}
-		//////////////////
-
 		System.out.println ( stage );
 		System.out.println ( chickens.size ( ) );
 	}
-
-	@Override
-	public void move () {
-
-		rocket.move ( );
-		synchronized (tirs) {
-			for ( Tir tir : tirs ) {
-				tir.move ( );
-			}
-		}
-		synchronized (chickens) {
-			for ( Chicken chicken : chickens ) {
-				chicken.move ( );
-			}
-		}
-		if ( ! Objects.isNull ( finalEgg ) )
-			finalEgg.move ( );
-
-		if ( ! Objects.isNull ( eggs ) ) {
-			synchronized (eggs) {
-				for ( Egg egg : eggs ) {
-					egg.move ( );
-				}
-			}
-		}
-
-		if ( ! Objects.isNull ( coins ) ) {
-
-			synchronized (coins) {
-				for ( Coin coin : coins ) {
-					coin.move ( );
-				}
-			}
-		}
-		if ( ! Objects.isNull ( stronges ) ) {
-
-			synchronized (stronges) {
-				for ( Stronge stronge : stronges ) {
-					stronge.move ( );
-				}
-			}
-		}
-
-	}
-
 	public Rocket getRocket () {
 		return rocket;
 	}
-
-
-	public void fire () {
-		if ( SecondMenu_Setting.typeOfShoot == false ) {
-			// System.out.println("multi");
-		}
-		if ( SecondMenu_Setting.typeOfShoot == true ) {
-			synchronized (tirs) {
-				int r = 25;
-				int v = 5;
-				if ( Tir.StrongOfTir <= 1 ) {
-					double degree = ( 90 ) / 180.0 * Math.PI;
-					tirs.add ( new Tir ( rocket.getX ( ) ,
-							rocket.getY ( ) + - r * Math.sin ( degree ) ,
-							v * Math.cos ( degree ) ,
-							- v * Math.sin ( degree ) ) );
-				} else {
-					for ( int i = 0 ; i < 5 ; i++ ) {
-						double degree = ( 70 + i * 10 ) / 180.0 * Math.PI;
-
-						tirs.add ( new Tir ( rocket.getX ( ) + r * Math.cos ( degree ) ,
-								rocket.getY ( ) + - r * Math.sin ( degree ) ,
-								5 * Math.cos ( degree ) ,
-								- 5 * Math.sin ( degree ) ) );
-					}
-					// System.out.println("single");
-
-				}
-			}
-		}
-	}
-
-	public void chick () {
-		System.out.println ("stage "+stage+" level "+level );
-		if ( stage == STAGE.FIRST & chickens.size ( ) == 0 ) {
-			if ( level == LEVEL.ONE ) {
-				Group1 ( );
-				//  group=GROUP.ONE;
-			}
-			if ( level == LEVEL.TWO ) {
-				Group1 ( );
-				// group=GROUP.ONE;
-			}
-			if ( level == LEVEL.THREE ) {
-				Group2 ( );
-				// group=GROUP.TWO;
-			}
-			if ( level == LEVEL.FOUR ) {
-				Group3 ( );
-				//group=GROUP.THREE;
-			}
-		}
-		if ( stage == STAGE.SECOND & chickens.size ( ) == 0 ) {
-			//second stage
-			if ( level == LEVEL.ONE ) {
-				Group1 ( );
-				//group=GROUP.ONE;
-
-			}
-			if ( level == LEVEL.TWO ) {
-				Group2 ( );
-				//group=GROUP.TWO;
-
-			}
-			if ( level == LEVEL.THREE ) {
-				Group3 ( );
-				// group=GROUP.THREE;
-
-			}
-			if ( level == LEVEL.FOUR ) {
-				Group4 ( );
-				//group=GROUP.THREE;
-
-			}
-		}
-		if ( stage == STAGE.THIRD & chickens.size ( ) == 0 ) {
-			//third stage
-			if ( level == LEVEL.ONE ) {
-				Group2 ( );
-				// group=GROUP.TWO;
-			}
-			if ( level == LEVEL.TWO ) {
-				Group2 ( );
-				// group=GROUP.TWO;
-
-			}
-			if ( level == LEVEL.THREE ) {
-				Group3 ( );
-				//group=GROUP.THREE;
-
-			}
-			if ( level == LEVEL.FOUR ) {
-				Group4 ( );
-				// group=GROUP.FOUR;
-
-			}
-		}
-		if ( stage == STAGE.FINAL & chickens.size ( ) == 0 & Objects.isNull ( finalEgg ) ) {
-			//final stage
-			System.out.println ( "final" );
-			GroupFinal ( );
-			group = GROUP.FINAL;
-		}
-	}
-
-	public void Strong ( double StrongX , double StrongY ) {
-		synchronized (stronges) {
-			stronges.add ( new Stronge ( StrongX ,
-					StrongY ,
-					1 ) );
-		}
-	}
-
-	public void Coin ( double CoinX , double CoinY ) {
-		synchronized (coins) {
-			coins.add ( new Coin ( CoinX ,
-					CoinY ,
-					1 ) );
-		}
-	}
-
-	public void Egg ( int NumberOfEggs , double Eggx , double Eggy ) {
-		synchronized (eggs) {
-			int r = 25;
-			for ( int i = 0 ; i < NumberOfEggs ; i++ ) {
-				eggs.add ( new Egg ( Eggx ,
-						Eggy ,
-						1 ) );
-			}
-		}
-	}
-
-	public void Group1 () {
-
-		synchronized (chickens) {
-			//System.out.println(NumberOfChickensG1);
-			int r = 25;
-			for ( int i = 0 ; i < 40 ; i++ ) {
-				double degree = ( 90 ) / 180.0 * Math.PI;
-				chickens.add ( new Chicken ( 60 * ( i % 8 ) + 80 ,
-						75 * ( i / 8 ) + 100 ,
-						1 * Math.sin ( degree ) ,
-						1 * Math.cos ( degree ) ) );
-			}
-		}
-	}
-
-	public void Group2 () {
-		double angel1 = 0;
-		int radius1 = 300;
-		for ( int i = 0 ; i < 20 ; i++ ) {
-			chickens.add ( new Chicken ( ( double ) ( Math.cos ( angel1 ) * radius1 ) + center.x , ( double ) ( Math.sin ( angel1 ) * radius1 ) + center.y , 1 , 0 ) );
-			angel1 += Math.toRadians ( 18 );
-		}
-		double angel2 = 0;
-		float radius2 = 200;
-		for ( int j = 0 ; j < 12 ; j++ ) {
-			chickens.add ( new Chicken ( ( int ) ( Math.cos ( angel2 ) * radius2 ) + center.x , ( int ) ( Math.sin ( angel2 ) * radius2 ) + center.y , 1 , 0 ) );
-			angel2 += Math.toRadians ( 30 );
-		}
-		double angel3 = 0;
-		float radius3 = 100;
-		for ( int j = 0 ; j < 6 ; j++ ) {
-			chickens.add ( new Chicken ( ( int ) ( Math.cos ( angel3 ) * radius3 ) + center.x , ( int ) ( Math.sin ( angel3 ) * radius3 ) + center.y , 1 , 0 ) );
-			angel3 += Math.toRadians ( 60 );
-		}
-	}
-
-	public void Group3 () {
-		synchronized (chickens) {
-			int r = 25;
-			for ( int i = 0 ; i < 50 ; i++ ) {
-				double degree = ( 90 ) / 180.0 * Math.PI;
-
-				chickens.add ( new Chicken ( 60 * ( i % 8 ) + 80 ,
-						75 * ( i / 8 ) + 100 ,
-						1 * Math.sin ( degree ) ,
-						1 * Math.cos ( degree ) ) );
-
-
-			}
-		}
-
-	}
-
-	public void Group4 () {
-		synchronized (chickens) {
-			int r = 25;
-			for ( int i = 0 ; i < 60 ; i++ ) {
-				double degree = ( 90 ) / 180.0 * Math.PI;
-
-				chickens.add ( new Chicken ( 60 * ( i % 8 ) + 80 ,
-						75 * ( i / 8 ) + 100 ,
-						1 * Math.sin ( degree ) ,
-						1 * Math.cos ( degree ) ) );
-			}
-		}
-	}
-
-	public void GroupFinal () {
-		if ( level == LEVEL.ONE ) {
-			System.out.println ( "groupfinal" );
-			finalEgg = new FinalEgg ( 1 );
-		}
-		if ( level == LEVEL.TWO ) {
-			//finalEgg=new FinalEgg(2);
-		}
-		if ( level == LEVEL.THREE ) {
-			// finalEgg=new FinalEgg(3);
-		}
-		if ( level == LEVEL.FOUR ) {
-			//finalEgg=new FinalEgg(4);
-		}
-	}
-
-	public boolean Coancidence ( Chicken chicken , Tir tir ) {
-		if ( ( chicken.getY ( ) >= tir.getY ( ) - 20 & chicken.getY ( ) <= tir.getY ( ) + 20 ) & ( chicken.getX ( ) >= tir.getX ( ) - 20 & chicken.getX ( ) <= tir.getX ( ) + 20 ) ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	public void MoveBackground ( Graphics2D g2 ) {
-
 		velocity = 25;
 		if ( a == 0 ) {
 			j++;
@@ -623,7 +175,6 @@ public class Game implements Animatable {
 			j++;
 		}
 	}
-
 	public void GameInformation ( Graphics2D g2 ) {
 		g2.setFont ( new Font ( "Arial" , 250 , 20 ) );
 		for ( int i = 0 ; i < 20 ; i++ ) {
@@ -664,7 +215,6 @@ public class Game implements Animatable {
 		g2.drawString ( ScoreStr , 50 , 1000 );
 
 	}
-
 	public void BombShooting ( Graphics2D g2 ) {
 
 		if ( MainPanel.statePauseMenu == false ) {
@@ -683,9 +233,7 @@ public class Game implements Animatable {
 			}
 			if ( HeightOfBomb < 550 ) {
 				//System.out.println(HeightOfBomb);
-
 				BombIsExploded = true;
-
 			}
 			LastXBomb = WidthOfBomb;
 			LastYBomb = HeightOfBomb;
@@ -693,33 +241,8 @@ public class Game implements Animatable {
 			g2.drawImage ( bufferedImageBomb , LastXBomb , LastYBomb , 40 , 40 , null );
 		}
 	}
-
 	public void drawTir ( Tir tir , Graphics2D g2 ) {
 		tir.paint ( g2 );
-	}
-
-	public boolean CheckQuancidence ( Chicken chicken , Tir tir ) {
-
-		return Coancidence ( chicken , tir );
-	}
-
-	public boolean CheckQuancidence ( Tir tir ) {
-		return ( tir.getY ( ) <= 575 & tir.getX ( ) <= 1100 & tir.getX ( ) >= 700 );
-	}
-
-	public boolean CheckQuancidence ( Egg egg ) {
-		return CheckQuancidence ( egg.getY (),egg.getX () );
-	}
-
-	public boolean CheckQuancidence ( Coin coin ) {
-		return CheckQuancidence ( coin.getY (),coin.getX () );
-	}
-
-	public boolean CheckQuancidence ( Stronge stronge ) {
-		return CheckQuancidence ( stronge.getY (),stronge.getX () );
-	}
-	public boolean CheckQuancidence ( double y,double x ){
-		return ( y >= Rocket.LastYRocket - 20 & y <= Rocket.LastYRocket + 20 ) & ( x >= Rocket.LastXRocket - 20 & x <= Rocket.LastXRocket + 20 );
 	}
 	public void ImagesInit () {
 		try {
@@ -741,11 +264,7 @@ public class Game implements Animatable {
 			ex.printStackTrace ( );
 		}
 	}
+	private void input(){
 
-	public int Random ( int n ) {
-		Random rand = new Random ( );
-
-		int RandomNumber = rand.nextInt ( n );
-		return RandomNumber;
 	}
 }

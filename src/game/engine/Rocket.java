@@ -51,29 +51,17 @@ public class Rocket implements Animatable {
     public Rocket(int x, int y) {
         this.x = x;
         this.y = y;
-
-
-
-
     }
-
     public int getX() {
         return x;
     }
-
-    public void setX(int x) {
-        this.x = x;
-
-    }
-
     public int getY() {
         return y;
     }
-
-    public void setY(int y) {
+    public void setLocation(int x,int y){
+        this.x = x;
         this.y = y;
     }
-
     @Override
     public void paint(Graphics2D g2) {
 //        g2.setColor(new Color(135, 109, 79));
@@ -101,11 +89,9 @@ public class Rocket implements Animatable {
             LastYRocket = y;
         }
         else {
-
             g2.drawImage(bufferedImage, LastXRocket - 40, LastYRocket - 40, 80, 80, null);
         }
     }
-
     @Override
     public void move() {
 

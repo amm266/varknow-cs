@@ -4,6 +4,7 @@ import javax.swing.*;
 
 public class Main extends JFrame{
     public static void main(String[] args) {
+
         MainFrame mainFrame = new MainFrame();
         MainPanel mainPanel = new MainPanel();
         //mainFrame.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));

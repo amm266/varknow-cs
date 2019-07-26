@@ -9,7 +9,6 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         setResizable(true);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
         setLayout(null);
     }
 }

@@ -33,11 +33,6 @@ public class FirstMenu extends JPanel implements Animatable {
         third
     };
     public static CounterOfPlayer counterOfPlayer;
-
-
-    public void FirstMenu() {
-    }
-
     public void buttonClicked(int x ,int y,JTextField jTextFieldInput ,JTextField jTextFieldOutput) {
 
         this.x=x;
