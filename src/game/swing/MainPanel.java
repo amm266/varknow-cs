@@ -1,7 +1,4 @@
 package game.swing;
-
-
-
 import game.Menu.FirstMenu;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
@@ -9,10 +6,14 @@ import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.logger.Logger;
 import game.logger.Read;
+import javafx.scene.input.KeyCode;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-public class MainPanel extends JPanel  {
+import java.awt.event.KeyListener;
+
+public class MainPanel extends JPanel implements KeyListener {
     public JTextField jTextField0 = new JTextField();
     public JTextField jTextField1 = new JTextField();
     public JTextField jTextField2 = new JTextField();
@@ -42,6 +43,23 @@ public class MainPanel extends JPanel  {
     public static long MainTime=System.currentTimeMillis();
     private long TimeOfBombShoot = 0;
 
+    @Override
+    public void keyTyped ( KeyEvent e ) {
+
+    }
+
+    @Override
+    public void keyPressed ( KeyEvent e ) {
+        if ( e.getKeyCode () == KeyEvent.VK_S ){
+            System.out.println ("save");
+        }
+    }
+
+    @Override
+    public void keyReleased ( KeyEvent e ) {
+
+    }
+
 
     private enum STATE {
         SEcondMenu ,
@@ -55,8 +73,6 @@ public class MainPanel extends JPanel  {
     public MainPanel() {
         setBounds(0, 0,2000,1100);
         game = new Game(2000, 1100);
-
-
         if(state == STATE.FIrstMenu){
             Jtextfieldinit(jTextField0,250,320,480,40,this);
             Jtextfieldinit(jTextField1,250,390,480,40,this);
@@ -65,7 +81,6 @@ public class MainPanel extends JPanel  {
         }
 
     }
-
     @Override
     protected void paintComponent(Graphics g) {
         game.chick();
@@ -97,8 +112,24 @@ public class MainPanel extends JPanel  {
                 state = STATE.Game;
             }
         }
+            addKeyListener (new KeyListener (){
+                @Override
+                public void keyTyped ( KeyEvent e ) {
+                    System.out.println ("pressed" );
+                }
 
-
+                @Override
+                public void keyPressed ( KeyEvent e ) {
+                    if ( e.getKeyCode () == KeyEvent.VK_S ){
+                        System.out.println ("save");
+                    }
+                    System.out.println ("pressed" );
+                }
+                @Override
+                public void keyReleased ( KeyEvent e ) {
+                    System.out.println ("pressed" );
+                }
+            } );
             addMouseMotionListener(new MouseMotionListener() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -108,16 +139,12 @@ public class MainPanel extends JPanel  {
                 public void mouseMoved(MouseEvent e) {
                         x = e.getX();
                         y = e.getY();
-
                     if(state == STATE.Game) {
                         game.getRocket().setX(e.getX());
                         game.getRocket().setY(e.getY());
                     }
                 }
             });
-
-
-
             addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -130,29 +157,23 @@ public class MainPanel extends JPanel  {
                     if(state == STATE.SEcondMenu) {
                         SecondMenu.buttonClicked(x,y);
                     }
-                    if(state==STATE.Game & statePauseMenu==true){
+                    if(state==STATE.Game && statePauseMenu ){
                         PauseMenu.ButtonClicked(x,y);
                     }
 
-                    if(state == STATE.Game & statePauseMenu==false){
+                    if(state == STATE.Game & ! statePauseMenu ){
                         if (ShootCounter%2==0) {
                             game.fire ();
-
                             NumberOfShoot--;
-
                             TimeOfShoot = System.currentTimeMillis();
                             ShootCounter++;
                             Temprature+=5;
                         }
-                        if((System.currentTimeMillis() - TimeOfShoot) >= 100 & WaitForShoot){
+                        if((System.currentTimeMillis() - TimeOfShoot) >= 100 && WaitForShoot){
                             ShootCounter++;
                             Temprature+=5;
                         }
-
-
-
                     }
-
                 }
 
                 @Override
@@ -194,17 +215,12 @@ public class MainPanel extends JPanel  {
                         Logger.getLogger().TypeOfShoot(SecondMenu_Setting.LastTypeOfShoot);
                         Logger.getLogger().NameOfPlayer(FirstMenu.NameOfPlayer);
                     }
-
                 }
-
             });
-
     }
-
     public void moveGame() {
         game.move();
     }
-
     public boolean state(){
         if(state == STATE.Game) {
             return true;
@@ -218,8 +234,6 @@ public class MainPanel extends JPanel  {
 
         return ShootCounter;
     }
-
-
         public JTextField Jtextfieldinit(JTextField jTextField,int x,int y,int width,int height ,MainPanel Mainpanel){
             jTextField.setLocation(x,y);
             jTextField.setSize(width,height);
@@ -228,8 +242,5 @@ public class MainPanel extends JPanel  {
             setLayout(null);
             Mainpanel.add(jTextField);
             return jTextField;
-
         }
-
-
 }

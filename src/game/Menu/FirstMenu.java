@@ -105,12 +105,7 @@ public class FirstMenu extends JPanel implements Animatable {
     }
 
     public boolean MenuState(){
-        if(ENTER) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return ENTER;
     }
 
     }

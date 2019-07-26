@@ -1,28 +1,17 @@
 package game.engine;
 
-import game.Main;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
 import game.Menu.SecondMenu_Setting;
-import game.swing.MainFrame;
 import game.swing.MainPanel;
 
 import javax.imageio.ImageIO;
-import javax.lang.model.type.NullType;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.reflect.Array;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.io.IOException;
-import java.applet.Applet;
-import java.applet.AudioClip;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Objects;
-import java.util.jar.Manifest;
 import java.util.Random;
 
 
@@ -76,8 +65,8 @@ public class Game implements Animatable {
 	public static BufferedImage bbufferedImage_SeconfMenu_Setting_COS2;
 	public static BufferedImage bufferedImage_Win;
 
-	private String HeartOfRocketStr = "" + Rocket.HeartOfRocket;
-	private String ScoreStr = "" + Rocket.Score;
+	private String HeartOfRocketStr = "" + Rocket.getHart ();
+	private String ScoreStr = "" + Rocket.getScore ();
 	public static int NumberOfBomb;
 	public static Point center = new Point ( 350 , 350 );
 
@@ -118,12 +107,14 @@ public class Game implements Animatable {
 		this.width = width;
 		this.height = height;
 		rocket = new Rocket ( width / 2 - 50 , height - 200 );
-		//int Xrocket = rocket.getX();
 		ImagesInit ( );
 	}
 
 	@Override
 	public void paint ( Graphics2D g2 ) {
+		if ( Rocket.getHart () <= 0 ){
+			System.out.println ("loooooooooooose" );
+		}
 		if ( level == LEVEL.Win ) {
 			try {
 				bufferedImage_Win = ImageIO.read ( new File ( "resources/win.png" ) );
@@ -132,20 +123,15 @@ public class Game implements Animatable {
 				ex.printStackTrace ( );
 			}
 			g2.drawImage ( bufferedImage_Win , 300 , 300 , 500 , 500 , null );
-
 		}
-
 		//moving the background
-		if ( MainPanel.statePauseMenu == false ) {
+		if ( ! MainPanel.statePauseMenu ) {
 
 			MoveBackground ( g2 );
 		}
-
-		if ( MainPanel.statePauseMenu == true ) {
+		if ( MainPanel.statePauseMenu ) {
 			g2.drawImage ( bufferedImagebackground , 0 , 0 , 2000 , 1200 , null );
 		}
-
-
 		if ( System.currentTimeMillis ( ) - SecondMenu.TimeOfStartGame <= 2000 ) {
 			g2.setFont ( new Font ( "Arial" , 250 , 80 ) );
 			g2.drawString ( "Start , good luck!" , 2000 / 2 - 300 , 1100 / 2 );
@@ -153,26 +139,29 @@ public class Game implements Animatable {
 			GameInformation ( g2 );
 			BombShooting ( g2 );
 		}
-
+		if ( ! Objects.isNull ( eggs ) ) {
+			for ( int k =0;k<eggs.size ();k++ ) {
+				Egg egg = eggs.get ( k );
+				if ( CheckQuancidence ( egg ) ) {
+					System.out.println ("fosh bad" );
+					eggs.remove ( egg );
+					Rocket.decreaseHart ( 1 );
+					System.out.println ("harts of rocket  "+Rocket.getHart () );
+					k--;
+				}
+				if ( egg.getY ( ) > 1100 ) {
+					eggs.remove ( egg );
+					System.out.println ("fosh khob" );
+					k--;
+				}
+			}
+		}
 		for ( int i = 0;i<tirs.size ();i++ ) {
 			Tir tir = tirs.get ( i );
 			if ( tir.getX ( ) > 2000 | tir.getY ( ) > 1100 | tir.getX ( ) < 0 | tir.getY ( ) < 0 ){
 				tirs.remove ( tir );
 				i--;
 			}
-			if ( ! Objects.isNull ( eggs ) ) {
-				for ( Egg egg : eggs ) {
-					if ( CheckQuancidence ( egg ) ) {
-						eggs.remove ( egg );
-						Rocket.HeartOfRocket--;
-					}
-					if ( egg.getY ( ) > 1100 ) {
-						eggs.remove ( egg );
-					}
-				}
-			}
-
-
 			if ( CheckQuancidence ( tir ) & stage == STAGE.FINAL ) {
 				finalEgg.AmountOfLife--;
 				tirs.remove ( tir );
@@ -199,7 +188,7 @@ public class Game implements Animatable {
 		}
 
 		for ( Tir tir : tirs ) {
-			Drawtir ( tir , g2 );
+			drawTir ( tir , g2 );
 		}
 
 		if ( ! Objects.isNull ( coins ) ) {
@@ -211,7 +200,7 @@ public class Game implements Animatable {
 					i--;
 				}
 				if ( CheckQuancidence ( coin ) ) {
-					Rocket.Score += 2;
+					Rocket.setScore ( Rocket.getScore ()+2 );
 					coins.remove ( coin );
 					i--;
 				}
@@ -221,15 +210,18 @@ public class Game implements Animatable {
 		}
 
 		if ( ! Objects.isNull ( stronges ) ) {
-			for ( Stronge stronge : stronges ) {
+			for ( int i=0;i<stronges.size ();i++ ) {
+				Stronge stronge = stronges.get ( i );
 				stronge.paint ( g2 );
 				if ( stronge.getY ( ) > 1100 ) {
 					stronges.remove ( stronge );
+					i--;
 				}
 				if ( CheckQuancidence ( stronge ) ) {
-					Rocket.Strong += 1;
+					Rocket.setStrong ( Rocket.getStrong ()+1 );
 					Tir.StrongOfTir++;
 					stronges.remove ( stronge );
+					i--;
 				}
 			}
 		}
@@ -243,7 +235,7 @@ public class Game implements Animatable {
 		if ( ( System.currentTimeMillis ( ) - EggTime ) >= 1000 & ! Objects.isNull ( chickens ) ) {
 			for ( Chicken chicken : chickens ) {
 				if ( Random ( 50 ) <= 5 ) {
-					Egg ( 0 , chicken.getX ( ) , chicken.getY ( ) );
+					Egg ( 1 , chicken.getX ( ) , chicken.getY ( ) );
 				}
 				EggTime = System.currentTimeMillis ( );
 
@@ -504,7 +496,6 @@ public class Game implements Animatable {
 
 	public void Egg ( int NumberOfEggs , double Eggx , double Eggy ) {
 		synchronized (eggs) {
-
 			int r = 25;
 			for ( int i = 0 ; i < NumberOfEggs ; i++ ) {
 				eggs.add ( new Egg ( Eggx ,
@@ -703,55 +694,33 @@ public class Game implements Animatable {
 		}
 	}
 
-	public void Drawtir ( Tir tir , Graphics2D g2 ) {
+	public void drawTir ( Tir tir , Graphics2D g2 ) {
 		tir.paint ( g2 );
 	}
 
 	public boolean CheckQuancidence ( Chicken chicken , Tir tir ) {
 
-		if ( Coancidence ( chicken , tir ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return Coancidence ( chicken , tir );
 	}
 
 	public boolean CheckQuancidence ( Tir tir ) {
-		if ( ( tir.getY ( ) <= 575 & tir.getX ( ) <= 1100 & tir.getX ( ) >= 700 ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return ( tir.getY ( ) <= 575 & tir.getX ( ) <= 1100 & tir.getX ( ) >= 700 );
 	}
 
 	public boolean CheckQuancidence ( Egg egg ) {
-		if ( ( egg.getY ( ) >= Rocket.LastYRocket - 20 & egg.getY ( ) <= Rocket.LastYRocket + 20 ) & ( egg.getX ( ) >= Rocket.LastXRocket - 20 & egg.getX ( ) <= Rocket.LastXRocket + 20 ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return CheckQuancidence ( egg.getY (),egg.getX () );
 	}
 
 	public boolean CheckQuancidence ( Coin coin ) {
-		if ( ( coin.getY ( ) >= Rocket.LastYRocket - 20 & coin.getY ( ) <= Rocket.LastYRocket + 20 ) & ( coin.getX ( ) >= Rocket.LastXRocket - 20 & coin.getX ( ) <= Rocket.LastXRocket + 20 ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return CheckQuancidence ( coin.getY (),coin.getX () );
 	}
 
 	public boolean CheckQuancidence ( Stronge stronge ) {
-		if ( ( stronge.getY ( ) >= Rocket.LastYRocket - 20 & stronge.getY ( ) <= Rocket.LastYRocket + 20 ) & ( stronge.getX ( ) >= Rocket.LastXRocket - 20 & stronge.getX ( ) <= Rocket.LastXRocket + 20 ) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return CheckQuancidence ( stronge.getY (),stronge.getX () );
 	}
-
-	/* public int Random(){
-
-	  random function
-   }*/
+	public boolean CheckQuancidence ( double y,double x ){
+		return ( y >= Rocket.LastYRocket - 20 & y <= Rocket.LastYRocket + 20 ) & ( x >= Rocket.LastXRocket - 20 & x <= Rocket.LastXRocket + 20 );
+	}
 	public void ImagesInit () {
 		try {
 			SmartEggbufferedImage = ImageIO.read ( new File ( "resources/Chicken_egg_broken_break-512.png" ) );

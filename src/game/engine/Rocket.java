@@ -1,14 +1,10 @@
 package game.engine;
 
-import game.Main;
-import game.Menu.SecondMenu;
 import game.Menu.SecondMenu_Setting;
 import game.swing.MainPanel;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,13 +14,37 @@ public class Rocket implements Animatable {
     private int y;
     public static int LastXRocket;
     public static int LastYRocket;
-    public static int HeartOfRocket=5;
-    public static int Score=0;
-    public static int Strong=3;
+    private static int hart =5;
+    private static int Score=0;
+    private static int Strong=3;
 
 
+    public static void setHart ( int hart ) {
+        Rocket.hart = hart;
+    }
 
+    public static int getHart () {
+        return hart;
+    }
 
+    public static void setScore ( int score ) {
+        Score = score;
+    }
+
+    public static void setStrong ( int strong ) {
+        Strong = strong;
+    }
+
+    public static int getScore () {
+        return Score;
+    }
+
+    public static int getStrong () {
+        return Strong;
+    }
+    public static void decreaseHart(int value){
+        hart -=value;
+    }
     private BufferedImage bufferedImage;
 
 

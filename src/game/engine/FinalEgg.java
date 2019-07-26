@@ -54,7 +54,7 @@ public class FinalEgg implements Animatable {
 
 
                     if(Math.abs(finalEggShoot.getX()- (Rocket.LastXRocket+5))<5 & Math.abs(finalEggShoot.getY()- (Rocket.LastYRocket+5))<5){
-                        Rocket.HeartOfRocket--;
+                        Rocket.decreaseHart ( 1 );
                         finalEggShoots.remove(finalEggShoot);
                         i--;
                     }
@@ -70,8 +70,6 @@ public class FinalEgg implements Animatable {
     public void move() {
         if (HeightOfEgg < 75)
             HeightOfEgg += 1;
-
-
     }
     public void shoot() {
         synchronized (finalEggShoots) {
