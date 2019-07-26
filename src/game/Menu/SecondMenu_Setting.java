@@ -3,11 +3,7 @@ package game.Menu;
 import game.engine.Animatable;
 import game.engine.Game;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 
 public class SecondMenu_Setting implements Animatable {
@@ -150,7 +146,7 @@ public class SecondMenu_Setting implements Animatable {
         g2.drawImage(Game.bufferedImage_SeconfMenu_Setting_Rocket1, 550,290, null);
         g2.drawImage(Game.bufferedImage_SeconfMenu_Setting_Rocket2, 750,300,80,80, null);
         g2.drawImage(Game.bufferedImage_SeconfMenu_Setting_COS1, 560,600,50,50,null);
-        g2.drawImage(Game.bbufferedImage_SeconfMenu_Setting_COS2, 750,600, 50,50,null);
+        g2.drawImage(Game.bufferedImage_SeconfMenu_Setting_COS2 , 750,600, 50,50,null);
     }
 
     public  void drawEveryThing(Graphics2D g2){

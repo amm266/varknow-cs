@@ -11,7 +11,7 @@ public class Main extends JFrame {
     public static void main(String[] args) {
 
         MainFrame mainFrame = new MainFrame();
-        MainPanel mainPanel = new MainPanel();
+        MainPanel mainPanel = new MainPanel("localhost");
         mainFrame.add(mainPanel);
         PaintLoop paintLoop=new PaintLoop(mainPanel);
         paintLoop.start();

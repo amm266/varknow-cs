@@ -1,29 +1,29 @@
 package game.engine;
-
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
-import game.Menu.SecondMenu_Setting;
 import game.swing.MainPanel;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.io.IOException;
-import java.util.Objects;
-import java.util.Random;
 public class Game{
-
-	public int LastXBomb;
-	public int LastYBomb;
-	private int width;
-	private int height;
+	//forBox
+	private Rocket mainRocket;
+	public ArrayList<Rocket> rockets = new ArrayList<> (  );
+	private final ArrayList<Tir> tirs = new ArrayList<> ( );
+	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
+	private final ArrayList<Egg> eggs = new ArrayList<> ( );
+	private final ArrayList<Coin> coins = new ArrayList<> ( );
+	private final ArrayList<Stronge> stronges = new ArrayList<> ( );
+	//local
+	private int LastXBomb;
+	private int LastYBomb;
 	private int j = 0;
 	private int f = 0;
 	private int a = 0;
 	private int b = 0;
-	private int velocity;
 	private int HeightOfBomb = 3000000;
 	private int WidthOfBomb;
 	private boolean BombIsExploded = false;
@@ -31,21 +31,8 @@ public class Game{
 	public BufferedImage bufferedImagebackground;
 	private BufferedImage bufferedImageBomb;
 	private String NumberOfShoot = "" + MainPanel.NumberOfShoot;
-	public Rocket rocket;
-	private final ArrayList<Tir> tirs = new ArrayList<> ( );
-	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
-	private final ArrayList<Egg> eggs = new ArrayList<> ( );
-	private final ArrayList<Coin> coins = new ArrayList<> ( );
-	private final ArrayList<Stronge> stronges = new ArrayList<> ( );
 	static PauseMenu pauseMenu = new PauseMenu ( );
-	public static int NumberOfChickensG1 = 40;
-	public static int NumberOfChickensG2 = 50;
-	public static int NumberOfChickensG3 = 60;
-	public static int NumberOfChickensG4 = 70;
-	public int G1Transform = 0;
 	public FinalEgg finalEgg;
-	public int NumberOfEgg;
-	private long EggTime = System.currentTimeMillis ( );
 	public static BufferedImage SmartEggbufferedImage;
 	public static BufferedImage CoinBufferImage;
 	public static BufferedImage StrongBufferImage;
@@ -55,9 +42,8 @@ public class Game{
 	public static BufferedImage bufferedImage_SeconfMenu_Setting_Rocket1;
 	public static BufferedImage bufferedImage_SeconfMenu_Setting_Rocket2;
 	public static BufferedImage bufferedImage_SeconfMenu_Setting_COS1;
-	public static BufferedImage bbufferedImage_SeconfMenu_Setting_COS2;
+	public static BufferedImage bufferedImage_SeconfMenu_Setting_COS2;
 	public static BufferedImage bufferedImage_Win;
-
 	private String HeartOfRocketStr = "" + Rocket.getHart ();
 	private String ScoreStr = "" + Rocket.getScore ();
 	public static int NumberOfBomb;
@@ -87,12 +73,11 @@ public class Game{
 	}
 	;
 	public static Game.STAGE stage = STAGE.FIRST;
-	public static Game.LEVEL level = LEVEL.ONE;
-	public static Game.GROUP group = GROUP.ONE;
+	private static Game.LEVEL level = LEVEL.ONE;
+	static Game.GROUP group = GROUP.ONE;
 	public Game ( int width , int height ) {
-		this.width = width;
-		this.height = height;
-		rocket = new Rocket ( width / 2 - 50 , height - 200 );
+		mainRocket = new Rocket ( width / 2 - 50 , height - 200 );
+		rockets.add ( mainRocket );
 		ImagesInit ( );
 	}
 	public void paint ( Graphics2D g2 ) {
@@ -136,10 +121,11 @@ public class Game{
 		}
 		if ( stage == STAGE.FINAL ) {
 			//final stage
-			System.out.println ( "stagefinal" );
+			System.out.println ( "stageFinal" );
 			finalEgg.paint ( g2 );
 		}
-		rocket.paint ( g2 );
+		for ( Rocket rocket:rockets )
+			rocket.paint ( g2 );
 		if ( MainPanel.statePauseMenu ) {
 			pauseMenu.paint ( g2 );
 		}
@@ -147,10 +133,10 @@ public class Game{
 		System.out.println ( chickens.size ( ) );
 	}
 	public Rocket getRocket () {
-		return rocket;
+		return mainRocket;
 	}
-	public void MoveBackground ( Graphics2D g2 ) {
-		velocity = 25;
+	private void MoveBackground ( Graphics2D g2 ) {
+		int velocity = 25;
 		if ( a == 0 ) {
 			j++;
 			g2.drawImage ( bufferedImagebackground , 0 , - 550 + velocity * j , 2000 , 1200 , null );
@@ -175,7 +161,7 @@ public class Game{
 			j++;
 		}
 	}
-	public void GameInformation ( Graphics2D g2 ) {
+	private void GameInformation ( Graphics2D g2 ) {
 		g2.setFont ( new Font ( "Arial" , 250 , 20 ) );
 		for ( int i = 0 ; i < 20 ; i++ ) {
 			g2.setColor ( new Color ( 253 , 255 , 255 ) );
@@ -191,13 +177,12 @@ public class Game{
 			MainPanel.Temprature = MainPanel.Temprature - 8;
 			MainPanel.MainTime = System.currentTimeMillis ( );
 		}
-		if ( MainPanel.Temprature >= 98 & MainPanel.WaitForShoot == true ) {
+		if ( MainPanel.Temprature >= 98 && MainPanel.WaitForShoot ) {
 			MainPanel.WaitForShoot = false;
 			MainPanel.WaitForShootTime = System.currentTimeMillis ( );
 
 		}
 		if ( Math.abs ( System.currentTimeMillis ( ) - MainPanel.WaitForShootTime ) >= 4000 & MainPanel.Temprature >= 98 ) {
-
 			MainPanel.WaitForShoot = true;
 			MainPanel.ShootCounter = 0;
 			MainPanel.Temprature = 0;
@@ -205,28 +190,23 @@ public class Game{
 		g2.drawImage ( bufferedImageHeart , 25 , 1000 , 15 , 15 , null );
 		g2.setColor ( new Color ( 0 , 200 , 200 ) );
 		g2.drawString ( HeartOfRocketStr , 50 , 1000 );
-
-
 		g2.setColor ( new Color ( 236 , 231 , 57 ) );
 		g2.drawString ( NumberOfShoot , 20 , 20 );
-
 		g2.drawImage ( CoinBufferImage , 75 , 1000 , 15 , 15 , null );
 		g2.setColor ( new Color ( 0 , 200 , 200 ) );
 		g2.drawString ( ScoreStr , 50 , 1000 );
-
 	}
-	public void BombShooting ( Graphics2D g2 ) {
-
-		if ( MainPanel.statePauseMenu == false ) {
-			if ( MainPanel.BombState & rocket.getY ( ) > 550 ) {
+	private void BombShooting ( Graphics2D g2 ) {
+		if ( ! MainPanel.statePauseMenu ) {
+			if ( MainPanel.BombState & mainRocket.getY ( ) > 550 ) {
            /* bombShoot=new BombShoot(rocket.getX(), rocket.getY());
             bombShoot.paint(g2);*/
-				HeightOfBomb = rocket.getY ( );
-				WidthOfBomb = rocket.getX ( );
+				HeightOfBomb = mainRocket.getY ( );
+				WidthOfBomb = mainRocket.getX ( );
 				MainPanel.BombState = false;
 				BombIsExploded = false;
 			}
-			if ( BombIsExploded == false ) {
+			if ( ! BombIsExploded ) {
 
 				g2.drawImage ( bufferedImageBomb , WidthOfBomb , HeightOfBomb , 40 , 40 , null );
 				HeightOfBomb = HeightOfBomb - 10;
@@ -241,10 +221,10 @@ public class Game{
 			g2.drawImage ( bufferedImageBomb , LastXBomb , LastYBomb , 40 , 40 , null );
 		}
 	}
-	public void drawTir ( Tir tir , Graphics2D g2 ) {
+	private void drawTir ( Tir tir , Graphics2D g2 ) {
 		tir.paint ( g2 );
 	}
-	public void ImagesInit () {
+	private void ImagesInit () {
 		try {
 			SmartEggbufferedImage = ImageIO.read ( new File ( "resources/Chicken_egg_broken_break-512.png" ) );
 			bufferedImageHeart = ImageIO.read ( new File ( "resources/heart.png" ) );
@@ -258,13 +238,9 @@ public class Game{
 			bufferedImage_SeconfMenu_Setting_Rocket1 = ImageIO.read ( new File ( "resources/rocket.png" ) );
 			bufferedImage_SeconfMenu_Setting_Rocket2 = ImageIO.read ( new File ( "resources/rocket2.png" ) );
 			bufferedImage_SeconfMenu_Setting_COS1 = ImageIO.read ( new File ( "resources/shoot2.png" ) );
-			bbufferedImage_SeconfMenu_Setting_COS2 = ImageIO.read ( new File ( "resources/tir.png" ) );
-
+			bufferedImage_SeconfMenu_Setting_COS2 = ImageIO.read ( new File ( "resources/tir.png" ) );
 		} catch (IOException ex) {
 			ex.printStackTrace ( );
 		}
-	}
-	private void input(){
-
 	}
 }
