@@ -3,7 +3,9 @@ package Server;
 import Box.Box;
 import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.YaGsonBuilder;
+import com.sun.istack.internal.Nullable;
 import game.engine.Rocket;
+import game.swing.MainPanel;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -11,71 +13,81 @@ import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Scanner;
 
-public class Client implements Runnable{
-	private static ArrayList<Client> clients = new ArrayList<>();
+public class Client implements Runnable {
+	private static ArrayList<Client> clients = new ArrayList<> ( );
 	private Socket socket;
-	private Mudle mudle;
+	private ServerGame game;
 	private static YaGson yaGson;
 	private Scanner scanner;
 	private Formatter formatter;
 	private Rocket rocket;
+	private MainPanel.STATE state;
+
 	static {
-		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ();
-		yaGson = yaGsonBuilder.create ();
+		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ( );
+		yaGson = yaGsonBuilder.create ( );
 	}
-	public Client(Socket socket) {
+	public Client ( Socket socket ) {
+
 		this.socket = socket;
-		clients.add(this);
 		try {
-			scanner = new Scanner(socket.getInputStream());
-			formatter = new Formatter(socket.getOutputStream());
+			scanner = new Scanner ( socket.getInputStream ( ) );
+			formatter = new Formatter ( socket.getOutputStream ( ) );
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace ( );
 		}
+		clients.add ( this );
 	}
 	@Override
 	public void run () {
-		clients.add ( this );
-		while ( true ){
+		game = new ServerGame ( 2000 , 1100 );
+		while ( true ) {
 			//get from client
-			Box box = recieve ();
+			Box box = recieve ( );
 			//process
-			Box answer = new Box ();
-			switch ( box.getAsk ()){
-				case state:
-					box.setStage ( Mudle.stage );
-					break;
-				case move:
-					mudle.move ();
-					break;
-				case fire:
-					mudle.fire ( rocket );
-					break;
-				case chick:
-					mudle.chick ();
-					break;
-				case setLocation:
-					rocket.setLocation ( box.getX (),box.getY ());
-					break;
+			Box answer = new Box ( );
+			if ( box.getAsk ( ) != null ) {
+				switch ( box.getAsk ( ) ) {
+					case state:
+						box.setStage ( ServerGame.stage );
+						break;
+					case fire:
+						game.fire ( rocket );
+						break;
+					case setLocation:
+						rocket.setLocation ( box.getX ( ) , box.getY ( ) );
+						break;
+					case startNewGame:
+						rocket =  game.newRocket ();
+						state = MainPanel.STATE.Game;
+						game.start ();
+						answer.setState ( state );
+						break;
+					case gameFields:
+						answer = game.setGameFields ( box );
+						break;
+				}
 			}
 			//send to client
-			send ( box );
+			send ( answer );
 		}
 	}
-	private void send( Box box ){
+
+	private void send ( Box box ) {
 		String out = yaGson.toJson ( box );
-		formatter.format(out + "\n");
-		formatter.flush();
+		formatter.format ( out + "\n" );
+		formatter.flush ( );
 	}
-	public Box recieve() {
+
+	public Box recieve () {
 		String get = "";
-		while (true) {
-			if (scanner.hasNextLine()) {
-				get = scanner.nextLine();
+		while ( true ) {
+			if ( scanner.hasNextLine ( ) ) {
+				get = scanner.nextLine ( );
 				break;
 			}
 		}
-		Box box = yaGson.fromJson(get, Box.class);
+		Box box = yaGson.fromJson ( get , Box.class );
 		return box;
 	}
 }

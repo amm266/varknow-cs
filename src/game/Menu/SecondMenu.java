@@ -71,6 +71,7 @@ public class SecondMenu extends JPanel implements Animatable {
             //START NEW GAME
             StartNewGame=true;
             TimeOfStartGame=System.currentTimeMillis();
+            MainPanel.startNewGame ();
 
         }
 

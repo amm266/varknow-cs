@@ -27,7 +27,7 @@ public class PaintLoop extends Thread {
             //FirstTime= System.currentTimeMillis();
             runnng=mainPanel.state();
                if (runnng & ! MainPanel.statePauseMenu ) {
-                   mainPanel.moveGame();
+                 //  mainPanel.moveGame();
                }
                 mainPanel.repaint();
             //LastTime=System.currentTimeMillis();

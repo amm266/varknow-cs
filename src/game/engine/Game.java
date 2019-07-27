@@ -1,4 +1,5 @@
 package game.engine;
+import Box.Box;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
 import game.swing.MainPanel;
@@ -12,9 +13,9 @@ public class Game{
 	//forBox
 	private Rocket mainRocket;
 	public ArrayList<Rocket> rockets = new ArrayList<> (  );
-	private final ArrayList<Tir> tirs = new ArrayList<> ( );
-	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
-	private final ArrayList<Egg> eggs = new ArrayList<> ( );
+	private ArrayList<Tir> tirs = new ArrayList<> ( );
+	public static  ArrayList<Chicken> chickens = new ArrayList<> ( );
+	private ArrayList<Egg> eggs = new ArrayList<> ( );
 	private final ArrayList<Coin> coins = new ArrayList<> ( );
 	private final ArrayList<Stronge> stronges = new ArrayList<> ( );
 	//local
@@ -102,7 +103,7 @@ public class Game{
 			g2.drawString ( "Start , good luck!" , 2000 / 2 - 300 , 1100 / 2 );
 		} else {
 			GameInformation ( g2 );
-			BombShooting ( g2 );
+			//BombShooting ( g2 );
 		}
 		for ( Tir tir : tirs ) {
 			drawTir ( tir , g2 );
@@ -167,12 +168,11 @@ public class Game{
 			g2.setColor ( new Color ( 253 , 255 , 255 ) );
 			g2.fillRect ( 15 * i + 150 , 20 , 8 , 17 );
 		}
-		//System.out.println(MainPanel.Temprature);
 		for ( int i = 0 ; i < MainPanel.Temprature / 5 ; i++ ) {
 			g2.setColor ( new Color ( 200 , 0 , 0 ) );
 			g2.fillRect ( 15 * i + 150 , 20 , 8 , 17 );
 		}
-
+			//reload logic
 		if ( MainPanel.Temprature > 0 & Math.abs ( System.currentTimeMillis ( ) - MainPanel.MainTime ) > 1000 & MainPanel.Temprature < 98 ) {
 			MainPanel.Temprature = MainPanel.Temprature - 8;
 			MainPanel.MainTime = System.currentTimeMillis ( );
@@ -187,6 +187,7 @@ public class Game{
 			MainPanel.ShootCounter = 0;
 			MainPanel.Temprature = 0;
 		}
+			//end reload
 		g2.drawImage ( bufferedImageHeart , 25 , 1000 , 15 , 15 , null );
 		g2.setColor ( new Color ( 0 , 200 , 200 ) );
 		g2.drawString ( HeartOfRocketStr , 50 , 1000 );
@@ -220,6 +221,13 @@ public class Game{
 		} else {
 			g2.drawImage ( bufferedImageBomb , LastXBomb , LastYBomb , 40 , 40 , null );
 		}
+	}
+	public void getGameFields( Box box ){
+		rockets = box.getRockets ();
+		chickens = box.getChickens ();
+		tirs = box.getTirs ();
+		eggs = box.getEggs ();
+		int a = 1;
 	}
 	private void drawTir ( Tir tir , Graphics2D g2 ) {
 		tir.paint ( g2 );

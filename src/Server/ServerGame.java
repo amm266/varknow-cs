@@ -1,22 +1,18 @@
 package Server;
 
+import Box.Box;
 import game.Menu.PauseMenu;
-import game.Menu.SecondMenu;
 import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.swing.MainPanel;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 
-public class Mudle {
-
+public class ServerGame extends Thread {
 	public int LastXBomb;
 	public int LastYBomb;
 	private int width;
@@ -28,7 +24,7 @@ public class Mudle {
 	public BufferedImage bufferedImagebackground;
 	private BufferedImage bufferedImageBomb;
 	private String NumberOfShoot = "" + MainPanel.NumberOfShoot;
-	public ArrayList<Rocket> rockets = new ArrayList<> (  );
+	public ArrayList<Rocket> rockets = new ArrayList<> ( );
 	private final ArrayList<Tir> tirs = new ArrayList<> ( );
 	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
 	private final ArrayList<Egg> eggs = new ArrayList<> ( );
@@ -43,11 +39,26 @@ public class Mudle {
 	public FinalEgg finalEgg;
 	public int NumberOfEgg;
 	private long EggTime = System.currentTimeMillis ( );
-
-	private String HeartOfRocketStr = "" + Rocket.getHart ();
-	private String ScoreStr = "" + Rocket.getScore ();
+	private static ServerGame mainGame;
+	private String HeartOfRocketStr = "" + Rocket.getHart ( );
+	private String ScoreStr = "" + Rocket.getScore ( );
 	public static int NumberOfBomb;
 	public static Point center = new Point ( 350 , 350 );
+
+	@Override
+	public void run () {
+		while ( true ) {
+			Thread thread = this;
+			try {
+				thread.sleep ( 30 );
+			} catch (InterruptedException e) {
+				e.printStackTrace ( );
+			}
+			this.chick ( );
+			this.move ( );
+			int a = 1;
+		}
+	}
 
 	public static enum STAGE {
 		FIRST,
@@ -77,49 +88,55 @@ public class Mudle {
 	}
 
 	;
-	public static Game.STAGE stage = Game.STAGE.FIRST;
-	public static Game.LEVEL level = Game.LEVEL.ONE;
-	public static Game.GROUP group = Game.GROUP.ONE;
+	public static game.engine.Game.STAGE stage = game.engine.Game.STAGE.FIRST;
+	public static game.engine.Game.LEVEL level = game.engine.Game.LEVEL.ONE;
+	public static game.engine.Game.GROUP group = game.engine.Game.GROUP.ONE;
 
 
-	public void Game ( int width , int height ) {
+	public ServerGame ( int width , int height ) {
 		this.width = width;
 		this.height = height;
+	}
+
+	public Rocket newRocket () {
 		Rocket rocket = new Rocket ( width / 2 - 50 , height - 200 );
 		rockets.add ( rocket );
+		return rocket;
+	}
+	public Box setGameFields( Box box ){
+		box.setGameFields ( new ArrayList<Chicken> (  ),tirs,eggs,rockets );
+		return box;
 	}
 	public void paint () {
-		if ( Rocket.getHart () <= 0 ){
-			System.out.println ("loooooooooooose" );
+		if ( Rocket.getHart ( ) <= 0 ) {
+			System.out.println ( "loooooooooooose" );
 		}
 		//moving the background
-		if ( ! Objects.isNull ( eggs ) ) {
-			for ( int k =0;k<eggs.size ();k++ ) {
-				Egg egg = eggs.get ( k );
-				if ( CheckQuancidence ( egg ) ) {
-					System.out.println ("fosh bad" );
-					eggs.remove ( egg );
-					Rocket.decreaseHart ( 1 );
-					System.out.println ("harts of rocket  "+Rocket.getHart () );
-					k--;
-				}
-				if ( egg.getY ( ) > 1100 ) {
-					eggs.remove ( egg );
-					k--;
-				}
+		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
+			Egg egg = eggs.get ( k );
+			if ( CheckQuancidence ( egg ) ) {
+				System.out.println ( "fosh bad" );
+				eggs.remove ( egg );
+				Rocket.decreaseHart ( 1 );
+				System.out.println ( "harts of rocket  " + Rocket.getHart ( ) );
+				k--;
+			}
+			if ( egg.getY ( ) > 1100 ) {
+				eggs.remove ( egg );
+				k--;
 			}
 		}
-		for ( int i = 0;i<tirs.size ();i++ ) {
+		for ( int i = 0 ; i < tirs.size ( ) ; i++ ) {
 			Tir tir = tirs.get ( i );
-			if ( tir.getX ( ) > 2000 | tir.getY ( ) > 1100 | tir.getX ( ) < 0 | tir.getY ( ) < 0 ){
+			if ( tir.getX ( ) > 2000 | tir.getY ( ) > 1100 | tir.getX ( ) < 0 | tir.getY ( ) < 0 ) {
 				tirs.remove ( tir );
 				i--;
 			}
-			if ( CheckQuancidence ( tir ) & stage == Game.STAGE.FINAL ) {
+			if ( CheckQuancidence ( tir ) & stage == game.engine.Game.STAGE.FINAL ) {
 				finalEgg.AmountOfLife--;
 				tirs.remove ( tir );
 			}
-			for ( int j=0;j<chickens.size ();j++ ) {
+			for ( int j = 0 ; j < chickens.size ( ) ; j++ ) {
 				Chicken chicken = chickens.get ( j );
 				if ( CheckQuancidence ( chicken , tir ) ) {
 					if ( Random ( 100 ) <= 6 ) {
@@ -137,30 +154,30 @@ public class Mudle {
 				}
 			}
 		}
-		for ( int i =0;i<coins.size ();i++ ) {
+		for ( int i = 0 ; i < coins.size ( ) ; i++ ) {
 			Coin coin = coins.get ( i );
 			if ( coin.getY ( ) > 1100 ) {
 				coins.remove ( coin );
 				i--;
 			}
 			if ( CheckQuancidence ( coin ) ) {
-				Rocket.setScore ( Rocket.getScore ()+2 );
+				Rocket.setScore ( Rocket.getScore ( ) + 2 );
 				coins.remove ( coin );
 				i--;
-				System.out.println ("score:  "+Rocket.getScore () );
+				System.out.println ( "score:  " + Rocket.getScore ( ) );
 			}
 
 		}
 		//System.out.println(Rocket.Score);
 
-		for ( int i=0;i<stronges.size ();i++ ) {
+		for ( int i = 0 ; i < stronges.size ( ) ; i++ ) {
 			Stronge stronge = stronges.get ( i );
 			if ( stronge.getY ( ) > 1100 ) {
 				stronges.remove ( stronge );
 				i--;
 			}
 			if ( CheckQuancidence ( stronge ) ) {
-				Rocket.setStrong ( Rocket.getStrong ()+1 );
+				Rocket.setStrong ( Rocket.getStrong ( ) + 1 );
 				Tir.StrongOfTir++;
 				stronges.remove ( stronge );
 				i--;
@@ -175,25 +192,25 @@ public class Mudle {
 			}
 		}
 		for ( Chicken chicken : chickens ) {
-			if ( stage == Game.STAGE.FIRST & NumberOfChickensG1 <= 30 & G1Transform < 30 ) {
+			if ( stage == game.engine.Game.STAGE.FIRST & NumberOfChickensG1 <= 30 & G1Transform < 30 ) {
 				chicken.SetX ( 60 * ( G1Transform % 6 ) + 80 );
 				chicken.SetY ( 75 * ( G1Transform / 6 ) + 100 );
 				G1Transform++;
 				chicken.SetMiddelOfChickenX ( 0 );
 			}
 		}
-		if ( stage == Game.STAGE.FIRST ) {
+		if ( stage == game.engine.Game.STAGE.FIRST ) {
 			if ( chickens.size ( ) > 0 ) {
 				NumberOfChickensG1 = chickens.size ( );
 				NumberOfEgg = NumberOfChickensG1;
 			}
 			if ( chickens.size ( ) <= 1 ) {
-				stage = Game.STAGE.SECOND;
+				stage = game.engine.Game.STAGE.SECOND;
 				chickens.clear ( );
 				//NumberOfChickensG1=40;
 			}
 		}
-		if ( stage == Game.STAGE.SECOND ) {
+		if ( stage == game.engine.Game.STAGE.SECOND ) {
 			//second stage
 			//System.out.println("stage2");
 			if ( chickens.size ( ) > 0 ) {
@@ -201,12 +218,12 @@ public class Mudle {
 				NumberOfEgg = NumberOfChickensG2;
 			}
 			if ( NumberOfChickensG2 <= 1 ) {
-				stage = Game.STAGE.THIRD;
+				stage = game.engine.Game.STAGE.THIRD;
 				chickens.clear ( );
 				//NumberOfChickensG2=40;
 			}
 		}
-		if ( stage == Game.STAGE.THIRD ) {
+		if ( stage == game.engine.Game.STAGE.THIRD ) {
 			//third stage
 			//System.out.println("stage3");
 			if ( chickens.size ( ) > 0 ) {
@@ -214,28 +231,28 @@ public class Mudle {
 				NumberOfEgg = NumberOfChickensG3;
 			}
 			if ( chickens.size ( ) <= 1 ) {
-				stage = Game.STAGE.FINAL;
+				stage = game.engine.Game.STAGE.FINAL;
 				chickens.clear ( );
 				//NumberOfChickensG3=40;
 			}
 		}
 
-		if ( stage == Game.STAGE.FINAL ) {
+		if ( stage == game.engine.Game.STAGE.FINAL ) {
 			//final stage
 			System.out.println ( "stagefinal" );
 			if ( finalEgg.AmountOfLife <= 1 ) {
 				// stage=STAGE.FIRST;
-				if ( level == Game.LEVEL.FOUR ) {
-					level = Game.LEVEL.Win;
+				if ( level == game.engine.Game.LEVEL.FOUR ) {
+					level = game.engine.Game.LEVEL.Win;
 				}
-				if ( level == Game.LEVEL.THREE ) {
-					level = Game.LEVEL.FOUR;
+				if ( level == game.engine.Game.LEVEL.THREE ) {
+					level = game.engine.Game.LEVEL.FOUR;
 				}
-				if ( level == Game.LEVEL.TWO ) {
-					level = Game.LEVEL.THREE;
+				if ( level == game.engine.Game.LEVEL.TWO ) {
+					level = game.engine.Game.LEVEL.THREE;
 				}
-				if ( level == Game.LEVEL.ONE ) {
-					level = Game.LEVEL.TWO;
+				if ( level == game.engine.Game.LEVEL.ONE ) {
+					level = game.engine.Game.LEVEL.TWO;
 				}
 				NumberOfBomb++;
 				finalEgg.Exictance = false;
@@ -244,8 +261,9 @@ public class Mudle {
 		System.out.println ( stage );
 		System.out.println ( chickens.size ( ) );
 	}
+
 	public void move () {
-		for ( Rocket rocket :rockets ){
+		for ( Rocket rocket : rockets ) {
 			rocket.move ( );
 		}
 		synchronized (tirs) {
@@ -276,7 +294,8 @@ public class Mudle {
 			}
 		}
 	}
-	public void fire (Rocket rocket) {
+
+	public void fire ( Rocket rocket ) {
 		if ( SecondMenu_Setting.typeOfShoot == false ) {
 			// System.out.println("multi");
 		}
@@ -307,75 +326,75 @@ public class Mudle {
 	}
 
 	public void chick () {
-		System.out.println ("stage "+stage+" level "+level );
-		if ( stage == Game.STAGE.FIRST & chickens.size ( ) == 0 ) {
-			if ( level == Game.LEVEL.ONE ) {
+		System.out.println ( "stage " + stage + " level " + level );
+		if ( stage == game.engine.Game.STAGE.FIRST & chickens.size ( ) == 0 ) {
+			if ( level == game.engine.Game.LEVEL.ONE ) {
 				Group1 ( );
 				//  group=GROUP.ONE;
 			}
-			if ( level == Game.LEVEL.TWO ) {
+			if ( level == game.engine.Game.LEVEL.TWO ) {
 				Group1 ( );
 				// group=GROUP.ONE;
 			}
-			if ( level == Game.LEVEL.THREE ) {
+			if ( level == game.engine.Game.LEVEL.THREE ) {
 				Group2 ( );
 				// group=GROUP.TWO;
 			}
-			if ( level == Game.LEVEL.FOUR ) {
+			if ( level == game.engine.Game.LEVEL.FOUR ) {
 				Group3 ( );
 				//group=GROUP.THREE;
 			}
 		}
-		if ( stage == Game.STAGE.SECOND & chickens.size ( ) == 0 ) {
+		if ( stage == game.engine.Game.STAGE.SECOND & chickens.size ( ) == 0 ) {
 			//second stage
-			if ( level == Game.LEVEL.ONE ) {
+			if ( level == game.engine.Game.LEVEL.ONE ) {
 				Group1 ( );
 				//group=GROUP.ONE;
 
 			}
-			if ( level == Game.LEVEL.TWO ) {
+			if ( level == game.engine.Game.LEVEL.TWO ) {
 				Group2 ( );
 				//group=GROUP.TWO;
 
 			}
-			if ( level == Game.LEVEL.THREE ) {
+			if ( level == game.engine.Game.LEVEL.THREE ) {
 				Group3 ( );
 				// group=GROUP.THREE;
 
 			}
-			if ( level == Game.LEVEL.FOUR ) {
+			if ( level == game.engine.Game.LEVEL.FOUR ) {
 				Group4 ( );
 				//group=GROUP.THREE;
 
 			}
 		}
-		if ( stage == Game.STAGE.THIRD & chickens.size ( ) == 0 ) {
+		if ( stage == game.engine.Game.STAGE.THIRD & chickens.size ( ) == 0 ) {
 			//third stage
-			if ( level == Game.LEVEL.ONE ) {
+			if ( level == game.engine.Game.LEVEL.ONE ) {
 				Group2 ( );
 				// group=GROUP.TWO;
 			}
-			if ( level == Game.LEVEL.TWO ) {
+			if ( level == game.engine.Game.LEVEL.TWO ) {
 				Group2 ( );
 				// group=GROUP.TWO;
 
 			}
-			if ( level == Game.LEVEL.THREE ) {
+			if ( level == game.engine.Game.LEVEL.THREE ) {
 				Group3 ( );
 				//group=GROUP.THREE;
 
 			}
-			if ( level == Game.LEVEL.FOUR ) {
+			if ( level == game.engine.Game.LEVEL.FOUR ) {
 				Group4 ( );
 				// group=GROUP.FOUR;
 
 			}
 		}
-		if ( stage == Game.STAGE.FINAL & chickens.size ( ) == 0 & Objects.isNull ( finalEgg ) ) {
+		if ( stage == game.engine.Game.STAGE.FINAL & chickens.size ( ) == 0 & Objects.isNull ( finalEgg ) ) {
 			//final stage
 			System.out.println ( "final" );
 			GroupFinal ( );
-			group = Game.GROUP.FINAL;
+			group = game.engine.Game.GROUP.FINAL;
 		}
 	}
 
@@ -474,17 +493,17 @@ public class Mudle {
 	}
 
 	public void GroupFinal () {
-		if ( level == Game.LEVEL.ONE ) {
+		if ( level == game.engine.Game.LEVEL.ONE ) {
 			System.out.println ( "groupfinal" );
 			finalEgg = new FinalEgg ( 1 );
 		}
-		if ( level == Game.LEVEL.TWO ) {
+		if ( level == game.engine.Game.LEVEL.TWO ) {
 			//finalEgg=new FinalEgg(2);
 		}
-		if ( level == Game.LEVEL.THREE ) {
+		if ( level == game.engine.Game.LEVEL.THREE ) {
 			// finalEgg=new FinalEgg(3);
 		}
-		if ( level == Game.LEVEL.FOUR ) {
+		if ( level == game.engine.Game.LEVEL.FOUR ) {
 			//finalEgg=new FinalEgg(4);
 		}
 	}
@@ -496,6 +515,7 @@ public class Mudle {
 			return false;
 		}
 	}
+
 	public boolean CheckQuancidence ( Chicken chicken , Tir tir ) {
 
 		return Coancidence ( chicken , tir );
@@ -506,19 +526,21 @@ public class Mudle {
 	}
 
 	public boolean CheckQuancidence ( Egg egg ) {
-		return CheckQuancidence ( egg.getY (),egg.getX () );
+		return CheckQuancidence ( egg.getY ( ) , egg.getX ( ) );
 	}
 
 	public boolean CheckQuancidence ( Coin coin ) {
-		return CheckQuancidence ( coin.getY (),coin.getX () );
+		return CheckQuancidence ( coin.getY ( ) , coin.getX ( ) );
 	}
 
 	public boolean CheckQuancidence ( Stronge stronge ) {
-		return CheckQuancidence ( stronge.getY (),stronge.getX () );
+		return CheckQuancidence ( stronge.getY ( ) , stronge.getX ( ) );
 	}
-	public boolean CheckQuancidence ( double y,double x ){
+
+	public boolean CheckQuancidence ( double y , double x ) {
 		return ( y >= Rocket.LastYRocket - 20 & y <= Rocket.LastYRocket + 20 ) & ( x >= Rocket.LastXRocket - 20 & x <= Rocket.LastXRocket + 20 );
 	}
+
 	public int Random ( int n ) {
 		Random rand = new Random ( );
 

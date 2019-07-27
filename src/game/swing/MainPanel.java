@@ -9,7 +9,6 @@ import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.logger.Logger;
 import game.logger.Read;
-import javafx.scene.input.KeyCode;
 import Box.Box;
 import javax.swing.*;
 import java.awt.*;
@@ -26,16 +25,13 @@ public class MainPanel extends JPanel implements KeyListener {
 		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ();
 		yaGson = yaGsonBuilder.create ();
 	}
-	public JTextField jTextField0 = new JTextField ( );
-	public JTextField jTextField1 = new JTextField ( );
-	public JTextField jTextField2 = new JTextField ( );
-	public JTextField jTextField3 = new JTextField ( );
-	public JLabel jLabel = new JLabel ( );
+	private JTextField jTextField0 = new JTextField ( );
+	private JTextField jTextField1 = new JTextField ( );
+	private JTextField jTextField2 = new JTextField ( );
+	private JTextField jTextField3 = new JTextField ( );
 	private boolean GameState = false;
 	private boolean MenuState = false;
-	public boolean runnng = true;
 	private Game game;
-	public static String NameOfPlayer;
 	SecondMenu SecondMenu = new SecondMenu ( );
 	FirstMenu FirstMenu = new FirstMenu ( );
 	public static int x;
@@ -45,18 +41,15 @@ public class MainPanel extends JPanel implements KeyListener {
 	public static boolean WaitForShoot = true;
 	public static long WaitForShootTime;
 	public static int NumberOfShoot = 10000;
-	public static boolean BombState = false;
+	public static boolean BombState = false;//nounsence
 	public static boolean statePauseMenu = false;
 	public static Logger log;
-	public Read read;
-	public Sound sound;
-	private int ChickCounter = 1;
 	public static int Temprature = 0;
 	public static long MainTime = System.currentTimeMillis ( );
 	private long TimeOfBombShoot = 0;
-	private Socket socket;
-	private Scanner scanner;
-	private Formatter formatter;
+	private static Socket socket;
+	private static Scanner scanner;
+	private static Formatter formatter;
 
 	@Override
 	public void keyTyped ( KeyEvent e ) {
@@ -70,16 +63,16 @@ public class MainPanel extends JPanel implements KeyListener {
 	@Override
 	public void keyReleased ( KeyEvent e ) {
 	}
-	private enum STATE {
+	public enum STATE {
 		SEcondMenu,
 		FIrstMenu,
 		PauseMenu,
 		Game
 	};
-	private STATE state = STATE.FIrstMenu;
+	private static STATE state = STATE.FIrstMenu;
 	public MainPanel ( String ip ) {
 		try {
-			Socket socket = new Socket ( ip , 8888 );
+			socket = new Socket ( ip , 8888 );
 			scanner = new Scanner ( socket.getInputStream ( ) );
 			formatter = new Formatter ( socket.getOutputStream ( ) );
 		} catch (IOException e) {
@@ -96,9 +89,10 @@ public class MainPanel extends JPanel implements KeyListener {
 	}
 	@Override
 	protected void paintComponent ( Graphics g ) {
-		connection ( new Box ( Box.Ask.chick ) );
 		super.paintComponent ( g );
 		if ( state == STATE.Game ) {
+			Box box = gameFields ();
+			game.getGameFields ( box );
 			game.paint ( ( Graphics2D ) g );
 		}
 		if ( state == STATE.FIrstMenu ) {
@@ -148,7 +142,7 @@ public class MainPanel extends JPanel implements KeyListener {
 				box.setX ( x );
 				box.setY ( y );
 				if ( state == STATE.Game ) {
-					game.getRocket ( ).setLocation ( e.getX ( ) , e.getY ( ) );
+					//game.getRocket ( ).setLocation ( e.getX ( ) , e.getY ( ) );
 					connection ( box );
 				}
 			}
@@ -225,9 +219,6 @@ public class MainPanel extends JPanel implements KeyListener {
 			}
 		} );
 	}
-	public void moveGame () {
-		connection ( new Box ( Box.Ask.move ) );
-	}
 	public boolean state () {
 		if ( state == STATE.Game ) {
 			return true;
@@ -247,11 +238,11 @@ public class MainPanel extends JPanel implements KeyListener {
 		Mainpanel.add ( jTextField );
 		return jTextField;
 	}
-	public Box connection(Box box){
+	public static Box connection(Box box){
 		send ( box );
 		return get ();
 	}
-	public Box get(){
+	private static Box get (){
 		String get = "";
 		while (true) {
 			if (scanner.hasNextLine()) {
@@ -261,9 +252,24 @@ public class MainPanel extends JPanel implements KeyListener {
 		}
 		return yaGson.fromJson(get, Box.class);
 	}
-	public void send(Box box ){
-		String oblect = yaGson.toJson(box);
-		formatter.format(oblect + "\n");
+
+	public static void setState ( STATE state ) {
+		MainPanel.state = state;
+	}
+
+	private static void send ( Box box ){
+		String obj = yaGson.toJson(box);
+		formatter.format(obj + "\n");
 		formatter.flush();
+	}
+	public static Box startNewGame(){
+		Box box = new Box ( Box.Ask.startNewGame );
+		Box answer = connection ( box );
+		state = answer.getState ();
+		return answer;
+	}
+	public static Box gameFields(){
+		Box box = new Box ( Box.Ask.gameFields );
+		return connection ( box );
 	}
 }

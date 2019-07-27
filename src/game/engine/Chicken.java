@@ -53,7 +53,6 @@ public class Chicken implements Animatable {
 			ex.printStackTrace ( );
 		}
 	}
-
 	@Override
 	public void move () {
 		x += 2 * vx;
@@ -79,17 +78,11 @@ public class Chicken implements Animatable {
 				angel3 += Math.toRadians ( 20 );
 				x = Math.cos ( angel3 ) * 200;
 				y = Math.sin ( angel3 ) * 200;
-
 			}
 		}
-
-
 	}
-
 	@Override
 	public void paint ( Graphics2D g2 ) {
-
 		g2.drawImage ( bufferImageChicken , ( int ) x , ( int ) y , 60 , 60 , null );
-
 	}
 }
