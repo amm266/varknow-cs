@@ -5,6 +5,7 @@ import game.Menu.SecondMenu;
 import game.swing.MainPanel;
 import javax.imageio.ImageIO;
 import java.awt.*;
+import Box.GameFields;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -222,7 +223,7 @@ public class Game{
 			g2.drawImage ( bufferedImageBomb , LastXBomb , LastYBomb , 40 , 40 , null );
 		}
 	}
-	public void getGameFields( Box box ){
+	public void getGameFields( GameFields box ){
 		rockets = box.getRockets ();
 		chickens = box.getChickens ();
 		tirs = box.getTirs ();

@@ -6,7 +6,7 @@ import javafx.concurrent.Worker;
 
 import java.util.ArrayList;
 
-public class Box {
+public class Box extends BoxFather {
 	public enum Ask {
 		state,
 		setLocation,
@@ -14,18 +14,20 @@ public class Box {
 		fire,
 		chick,
 		startNewGame,
-		gameFields
 	}
 	public Box( Ask ask){
+		super(BoxType.simple);
 		this.ask = ask;
 	}
 	public Box(){
+		super(BoxType.simple);
 	}
 	private MainPanel.STATE state;
 	private Game.STAGE stage;
 	private Ask ask;
 	private int x;
 	private int y;
+	private boolean succes;
 	private ArrayList<Chicken> chickens;
 	private ArrayList<Tir> tirs;
 	private ArrayList<Egg> eggs;
@@ -41,6 +43,15 @@ public class Box {
 		this.eggs = eggs;
 		this.rockets = rockets;
 	}
+
+	public void setSucces ( boolean succes ) {
+		this.succes = succes;
+	}
+
+	public boolean isSucces () {
+		return succes;
+	}
+
 	public void setChickens ( ArrayList<Chicken> chickens ) {
 		this.chickens = chickens;
 	}

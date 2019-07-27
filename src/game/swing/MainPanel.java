@@ -2,14 +2,16 @@ package game.swing;
 
 import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.YaGsonBuilder;
+import game.Connection;
 import game.Menu.FirstMenu;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
 import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.logger.Logger;
-import game.logger.Read;
 import Box.Box;
+import Box.BoxFather;
+import Box.GameFields;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -31,7 +33,7 @@ public class MainPanel extends JPanel implements KeyListener {
 	private JTextField jTextField3 = new JTextField ( );
 	private boolean GameState = false;
 	private boolean MenuState = false;
-	private Game game;
+	private static Game game;
 	SecondMenu SecondMenu = new SecondMenu ( );
 	FirstMenu FirstMenu = new FirstMenu ( );
 	public static int x;
@@ -47,9 +49,7 @@ public class MainPanel extends JPanel implements KeyListener {
 	public static int Temprature = 0;
 	public static long MainTime = System.currentTimeMillis ( );
 	private long TimeOfBombShoot = 0;
-	private static Socket socket;
-	private static Scanner scanner;
-	private static Formatter formatter;
+	private static Connection connection;
 
 	@Override
 	public void keyTyped ( KeyEvent e ) {
@@ -70,14 +70,8 @@ public class MainPanel extends JPanel implements KeyListener {
 		Game
 	};
 	private static STATE state = STATE.FIrstMenu;
-	public MainPanel ( String ip ) {
-		try {
-			socket = new Socket ( ip , 8888 );
-			scanner = new Scanner ( socket.getInputStream ( ) );
-			formatter = new Formatter ( socket.getOutputStream ( ) );
-		} catch (IOException e) {
-			e.printStackTrace ( );
-		}
+	public MainPanel (String ip ) {
+		connection = new Connection ( ip );
 		setBounds ( 0 , 0 , 2000 , 1100 );
 		game = new Game ( 2000 , 1100 );
 		if ( state == STATE.FIrstMenu ) {
@@ -87,12 +81,13 @@ public class MainPanel extends JPanel implements KeyListener {
 			Jtextfieldinit ( jTextField3 , 250 , 490 , 480 , 40 , this );
 		}
 	}
+	public static void setGameField(GameFields gameFields){
+		game.getGameFields ( gameFields );
+	}
 	@Override
 	protected void paintComponent ( Graphics g ) {
 		super.paintComponent ( g );
 		if ( state == STATE.Game ) {
-			Box box = gameFields ();
-			game.getGameFields ( box );
 			game.paint ( ( Graphics2D ) g );
 		}
 		if ( state == STATE.FIrstMenu ) {
@@ -143,7 +138,7 @@ public class MainPanel extends JPanel implements KeyListener {
 				box.setY ( y );
 				if ( state == STATE.Game ) {
 					//game.getRocket ( ).setLocation ( e.getX ( ) , e.getY ( ) );
-					connection ( box );
+					connection.connection ( box );
 				}
 			}
 		} );
@@ -165,7 +160,7 @@ public class MainPanel extends JPanel implements KeyListener {
 
 				if ( state == STATE.Game & ! statePauseMenu ) {
 					if ( ShootCounter % 2 == 0 ) {
-						connection ( new Box ( Box.Ask.fire ) );
+						connection.connection ( new Box ( Box.Ask.fire ) );
 						NumberOfShoot--;
 						TimeOfShoot = System.currentTimeMillis ( );
 						ShootCounter++;
@@ -232,44 +227,18 @@ public class MainPanel extends JPanel implements KeyListener {
 	public JTextField Jtextfieldinit ( JTextField jTextField , int x , int y , int width , int height , MainPanel Mainpanel ) {
 		jTextField.setLocation ( x , y );
 		jTextField.setSize ( width , height );
-		//jTextField.setText("pleas input your name :)");
 		setVisible ( true );
 		setLayout ( null );
 		Mainpanel.add ( jTextField );
 		return jTextField;
 	}
-	public static Box connection(Box box){
-		send ( box );
-		return get ();
-	}
-	private static Box get (){
-		String get = "";
-		while (true) {
-			if (scanner.hasNextLine()) {
-				get = scanner.nextLine();
-				break;
-			}
-		}
-		return yaGson.fromJson(get, Box.class);
-	}
-
 	public static void setState ( STATE state ) {
 		MainPanel.state = state;
 	}
-
-	private static void send ( Box box ){
-		String obj = yaGson.toJson(box);
-		formatter.format(obj + "\n");
-		formatter.flush();
-	}
-	public static Box startNewGame(){
+	public static BoxFather startNewGame(){
 		Box box = new Box ( Box.Ask.startNewGame );
-		Box answer = connection ( box );
-		state = answer.getState ();
+		BoxFather answer = connection.connection ( box );
+		state = ((Box)answer).getState ();
 		return answer;
-	}
-	public static Box gameFields(){
-		Box box = new Box ( Box.Ask.gameFields );
-		return connection ( box );
 	}
 }

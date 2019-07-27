@@ -1,11 +1,10 @@
 package Server;
 
-import Box.Box;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.swing.MainPanel;
-
+import Box.GameFields;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -56,6 +55,7 @@ public class ServerGame extends Thread {
 			}
 			this.chick ( );
 			this.move ( );
+			this.sendGameFields ();
 			int a = 1;
 		}
 	}
@@ -103,9 +103,11 @@ public class ServerGame extends Thread {
 		rockets.add ( rocket );
 		return rocket;
 	}
-	public Box setGameFields( Box box ){
-		box.setGameFields ( new ArrayList<Chicken> (  ),tirs,eggs,rockets );
-		return box;
+	public GameFields sendGameFields ( ){
+
+		GameFields gameFields = new GameFields (new ArrayList<> (  ),tirs,eggs,rockets  );
+		Client.send ( gameFields );
+		return gameFields;
 	}
 	public void paint () {
 		if ( Rocket.getHart ( ) <= 0 ) {

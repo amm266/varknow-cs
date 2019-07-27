@@ -1,9 +1,9 @@
 package Server;
 
-import Box.Box;
+import Box.*;
 import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.YaGsonBuilder;
-import com.sun.istack.internal.Nullable;
+import game.Connection;
 import game.engine.Rocket;
 import game.swing.MainPanel;
 
@@ -15,11 +15,11 @@ import java.util.Scanner;
 
 public class Client implements Runnable {
 	private static ArrayList<Client> clients = new ArrayList<> ( );
-	private Socket socket;
+	private Connection connection;
 	private ServerGame game;
 	private static YaGson yaGson;
-	private Scanner scanner;
-	private Formatter formatter;
+	private static Scanner scanner;
+	private static Formatter formatter;
 	private Rocket rocket;
 	private MainPanel.STATE state;
 
@@ -29,7 +29,7 @@ public class Client implements Runnable {
 	}
 	public Client ( Socket socket ) {
 
-		this.socket = socket;
+		connection = new Connection ( socket );
 		try {
 			scanner = new Scanner ( socket.getInputStream ( ) );
 			formatter = new Formatter ( socket.getOutputStream ( ) );
@@ -42,10 +42,15 @@ public class Client implements Runnable {
 	public void run () {
 		game = new ServerGame ( 2000 , 1100 );
 		while ( true ) {
+			//check connection
+			if (connection.isConnect () ){
+				disconnect ();
+				break;
+			}
 			//get from client
-			Box box = recieve ( );
+			Box box = (Box ) recieve ( );
 			//process
-			Box answer = new Box ( );
+			BoxFather answer = new BoxFather ( BoxFather.BoxType.simple);
 			if ( box.getAsk ( ) != null ) {
 				switch ( box.getAsk ( ) ) {
 					case state:
@@ -61,10 +66,8 @@ public class Client implements Runnable {
 						rocket =  game.newRocket ();
 						state = MainPanel.STATE.Game;
 						game.start ();
-						answer.setState ( state );
-						break;
-					case gameFields:
-						answer = game.setGameFields ( box );
+						answer = new Box (  );
+						( ( Box ) answer ).setState ( state );
 						break;
 				}
 			}
@@ -73,13 +76,13 @@ public class Client implements Runnable {
 		}
 	}
 
-	private void send ( Box box ) {
+	public static void send ( BoxFather box ) {
 		String out = yaGson.toJson ( box );
 		formatter.format ( out + "\n" );
 		formatter.flush ( );
 	}
 
-	public Box recieve () {
+	public static BoxFather recieve () {
 		String get = "";
 		while ( true ) {
 			if ( scanner.hasNextLine ( ) ) {
@@ -87,7 +90,10 @@ public class Client implements Runnable {
 				break;
 			}
 		}
-		Box box = yaGson.fromJson ( get , Box.class );
+		BoxFather box = yaGson.fromJson ( get , BoxFather.class );
 		return box;
+	}
+	private void disconnect(){
+		clients.remove ( this );
 	}
 }
