@@ -11,9 +11,7 @@ public class Main extends JFrame {
     public static void main(String[] args) {
 
         MainFrame mainFrame = new MainFrame();
-        MainPanel mainPanel = new MainPanel();
-        Connection connection = new Connection ( "localhost" );
-        new Thread ( connection ).start ();
+        MainPanel mainPanel = new MainPanel("127.0.0.1");
         mainFrame.add(mainPanel);
         PaintLoop paintLoop=new PaintLoop(mainPanel);
         paintLoop.start();

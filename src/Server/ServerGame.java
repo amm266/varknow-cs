@@ -1,5 +1,6 @@
 package Server;
 
+import com.gilecode.yagson.YaGson;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu_Setting;
 import game.engine.*;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.Random;
 
 public class ServerGame extends Thread {
+	private ArrayList<Client> clients = new ArrayList<Client> (  );
 	public int LastXBomb;
 	public int LastYBomb;
 	private int width;
@@ -47,16 +49,16 @@ public class ServerGame extends Thread {
 	@Override
 	public void run () {
 		while ( true ) {
-			Thread thread = this;
 			try {
-				thread.sleep ( 30 );
+				System.out.println ("time1   :"+ System.currentTimeMillis () );
+				sleep ( 10 );
+				System.out.println ("time2   :"+ System.currentTimeMillis () );
 			} catch (InterruptedException e) {
 				e.printStackTrace ( );
 			}
 			this.chick ( );
 			this.move ( );
 			this.sendGameFields ();
-			int a = 1;
 		}
 	}
 
@@ -93,9 +95,10 @@ public class ServerGame extends Thread {
 	public static game.engine.Game.GROUP group = game.engine.Game.GROUP.ONE;
 
 
-	public ServerGame ( int width , int height ) {
+	public ServerGame ( int width , int height,Client client ) {
 		this.width = width;
 		this.height = height;
+		this.clients.add ( client );
 	}
 
 	public Rocket newRocket () {
@@ -104,9 +107,16 @@ public class ServerGame extends Thread {
 		return rocket;
 	}
 	public GameFields sendGameFields ( ){
-
+		if ( chickens.size ()>0 ){
+			YaGson yaGson = new YaGson ();
+			String c = yaGson.toJson ( chickens.get ( 0 ) );
+			String r = yaGson.toJson ( rockets.get ( 0 ) );
+			int o = 1;
+		}
 		GameFields gameFields = new GameFields (new ArrayList<> (  ),tirs,eggs,rockets  );
-		Client.send ( gameFields );
+		for ( Client client:clients ){
+			client.getConnection ().send ( gameFields );
+		}
 		return gameFields;
 	}
 	public void paint () {

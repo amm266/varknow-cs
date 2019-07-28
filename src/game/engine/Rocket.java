@@ -45,7 +45,7 @@ public class Rocket implements Animatable {
     public static void decreaseHart(int value){
         hart -=value;
     }
-    private BufferedImage bufferedImage;
+    private transient BufferedImage bufferedImage;
 
 
     public Rocket(int x, int y) {

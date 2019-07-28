@@ -6,7 +6,6 @@ import game.Connection;
 import game.Menu.FirstMenu;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
-import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.logger.Logger;
 import Box.Box;
@@ -16,10 +15,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.KeyListener;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.Formatter;
-import java.util.Scanner;
 
 public class MainPanel extends JPanel implements KeyListener {
 	private static YaGson yaGson;
@@ -69,9 +64,20 @@ public class MainPanel extends JPanel implements KeyListener {
 		PauseMenu,
 		Game
 	};
+
+	public static Connection getConnection () {
+		return connection;
+	}
+
 	private static STATE state = STATE.FIrstMenu;
-	public MainPanel (String ip ) {
+
+	public static STATE getState () {
+		return state;
+	}
+
+	public MainPanel ( String ip ) {
 		connection = new Connection ( ip );
+		new MoveRocket ().start ();
 		setBounds ( 0 , 0 , 2000 , 1100 );
 		game = new Game ( 2000 , 1100 );
 		if ( state == STATE.FIrstMenu ) {
@@ -137,9 +143,9 @@ public class MainPanel extends JPanel implements KeyListener {
 				box.setX ( x );
 				box.setY ( y );
 				if ( state == STATE.Game ) {
-					//game.getRocket ( ).setLocation ( e.getX ( ) , e.getY ( ) );
-					connection.connection ( box );
+				//	connection.connection ( box );
 				}
+				MoveRocket.setLocation ( x,y );
 			}
 		} );
 		addMouseListener ( new MouseListener ( ) {
@@ -160,6 +166,7 @@ public class MainPanel extends JPanel implements KeyListener {
 
 				if ( state == STATE.Game & ! statePauseMenu ) {
 					if ( ShootCounter % 2 == 0 ) {
+						//todo
 						connection.connection ( new Box ( Box.Ask.fire ) );
 						NumberOfShoot--;
 						TimeOfShoot = System.currentTimeMillis ( );
@@ -203,14 +210,15 @@ public class MainPanel extends JPanel implements KeyListener {
 			}
 			@Override
 			public void mouseExited ( MouseEvent e ) {
-				if ( state == STATE.Game ) {
-					statePauseMenu = true;
-					Logger.getLogger ( ).LocationOfRocket ( Rocket.LastXRocket , Rocket.LastYRocket );
-					Logger.getLogger ( ).TypeOfSpacecraft ( SecondMenu_Setting.LastTypeOfSpacecraft );
-					Logger.getLogger ( ).ColorOfShoot ( SecondMenu_Setting.LastColorOfShoot );
-					Logger.getLogger ( ).TypeOfShoot ( SecondMenu_Setting.LastTypeOfShoot );
-					Logger.getLogger ( ).NameOfPlayer ( FirstMenu.NameOfPlayer );
-				}
+				// TODO: 7/28/2019
+//				if ( state == STATE.Game ) {
+//					statePauseMenu = true;
+//					Logger.getLogger ( ).LocationOfRocket ( Rocket.LastXRocket , Rocket.LastYRocket );
+//					Logger.getLogger ( ).TypeOfSpacecraft ( SecondMenu_Setting.LastTypeOfSpacecraft );
+//					Logger.getLogger ( ).ColorOfShoot ( SecondMenu_Setting.LastColorOfShoot );
+//					Logger.getLogger ( ).TypeOfShoot ( SecondMenu_Setting.LastTypeOfShoot );
+//					Logger.getLogger ( ).NameOfPlayer ( FirstMenu.NameOfPlayer );
+//				}
 			}
 		} );
 	}
@@ -236,9 +244,36 @@ public class MainPanel extends JPanel implements KeyListener {
 		MainPanel.state = state;
 	}
 	public static BoxFather startNewGame(){
+		System.out.println ("new Game!" );
 		Box box = new Box ( Box.Ask.startNewGame );
 		BoxFather answer = connection.connection ( box );
-		state = ((Box)answer).getState ();
+		state = STATE.Game;
+		System.out.println ("new Game!" );
 		return answer;
+	}
+}
+class MoveRocket extends Thread{
+	private static int x;
+	private static int y;
+	private static int waitMilis = 50;
+	public static void setLocation(int x,int y){
+		MoveRocket.x = x;
+		MoveRocket.y = y;
+	}
+	@Override
+	public void run () {
+		while ( true ){
+			try {
+				sleep ( waitMilis );
+			} catch (InterruptedException e) {
+				e.printStackTrace ( );
+			}
+			Box box = new Box ( Box.Ask.setLocation  );
+			box.setX ( x );
+			box.setY ( y );
+			if ( MainPanel.getState () == MainPanel.STATE.Game ) {
+				MainPanel.getConnection ().connection ( box );
+			}
+		}
 	}
 }

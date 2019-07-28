@@ -37,20 +37,31 @@ public class Client implements Runnable {
 			e.printStackTrace ( );
 		}
 		clients.add ( this );
+		System.out.println ("New Client Connected!!!" );
 	}
+
+	public Connection getConnection () {
+		return connection;
+	}
+
 	@Override
 	public void run () {
-		game = new ServerGame ( 2000 , 1100 );
+		game = new ServerGame ( 2000 , 1100,this );
 		while ( true ) {
-			//check connection
-			if (connection.isConnect () ){
+//			check connection
+			if (!connection.isConnect () ){
 				disconnect ();
 				break;
 			}
 			//get from client
-			Box box = (Box ) recieve ( );
+			Box box = (Box ) connection.get ( );
+			int a=1;
 			//process
+			System.out.println ("start process" );
 			BoxFather answer = new BoxFather ( BoxFather.BoxType.simple);
+			if(box == null){
+				int w=1;
+			}
 			if ( box.getAsk ( ) != null ) {
 				switch ( box.getAsk ( ) ) {
 					case state:
@@ -71,27 +82,10 @@ public class Client implements Runnable {
 						break;
 				}
 			}
+			System.out.println ("end process" );
 			//send to client
-			send ( answer );
+			connection.send ( answer );
 		}
-	}
-
-	public static void send ( BoxFather box ) {
-		String out = yaGson.toJson ( box );
-		formatter.format ( out + "\n" );
-		formatter.flush ( );
-	}
-
-	public static BoxFather recieve () {
-		String get = "";
-		while ( true ) {
-			if ( scanner.hasNextLine ( ) ) {
-				get = scanner.nextLine ( );
-				break;
-			}
-		}
-		BoxFather box = yaGson.fromJson ( get , BoxFather.class );
-		return box;
 	}
 	private void disconnect(){
 		clients.remove ( this );

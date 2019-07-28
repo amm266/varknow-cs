@@ -23,9 +23,9 @@ public class Connection {
 	Socket socket;
 	Scanner scanner;
 	Formatter formatter;
-	BoxFather tmp;
-	BoxFather simple;
-
+	volatile BoxFather tmp;
+	volatile BoxFather simple;
+	private static ArrayList<Connection> connections =new ArrayList<> (  );
 	public Connection ( String ip ) {
 		try {
 			socket = new Socket ( ip , 8888 );
@@ -35,6 +35,11 @@ public class Connection {
 		} catch (IOException e) {
 			e.printStackTrace ( );
 		}
+		get = new Get ( this );
+		send = new Send ( this );
+		new Thread ( send ).start ();
+		new Thread ( get ).start ();
+		connections.add ( this );
 	}
 
 	public Connection ( Socket socket ) {
@@ -44,11 +49,18 @@ public class Connection {
 		} catch (IOException e) {
 			e.printStackTrace ( );
 		}
+		get = new Get ( this );
+		send = new Send ( this );
+		new Thread ( send ).start ();
+		new Thread ( get ).start ();
+		connections.add ( this );
 	}
 	public void disconnect(){
 
 	}
 	public boolean isConnect(){
+		if ( socket == null )
+			return true;
 		return socket.isConnected ();
 	}
 	public BoxFather connection ( BoxFather box ) {
@@ -57,15 +69,21 @@ public class Connection {
 		return box;
 	}
 
-	private BoxFather get () {
-		while ( simple == null ) ;
+	public BoxFather get () {
+		//System.out.println ("get is started" );
+		while ( simple == null ) {
+
+		}
 		BoxFather boxFather = simple;
 		simple = null;
+		//System.out.println ("make simple null" );
+		//System.out.println ("get is completed" );
 		return boxFather;
 	}
 
-	private void send ( BoxFather box ) {
-		Send.addToQueue ( box );
+	public void send ( BoxFather box ) {
+		send.addToQueue ( box );
+		//System.out.println ("some box added to send queue!!!" );
 	}
 }
 
@@ -74,24 +92,34 @@ class Send implements Runnable {
 	Send (Connection connection){
 		this.connection = connection;
 	}
-	static ArrayList<BoxFather> boxFathers = new ArrayList<BoxFather> ( );
+	ArrayList<BoxFather> boxFathers = new ArrayList<BoxFather> ( );
 	@Override
 	public void run () {
 		while ( true ) {
+			try {
+				Thread.sleep ( 1 );
+			} catch (InterruptedException e) {
+				e.printStackTrace ( );
+			}
 			if ( boxFathers.size ( ) > 0 ) {
+		//		System.out.println ("send    " );
 				send ( boxFathers.get ( 0 ),connection );
 				boxFathers.remove ( 0 );
 			}
 		}
 	}
-	static void addToQueue(BoxFather boxFather){
+	void addToQueue(BoxFather boxFather){
 		boxFathers.add ( boxFather );
 	}
 	private static void send ( BoxFather box,Connection connection ) {
 		connection.simple = null;
+		//System.out.println ("make simple null" );
 		String obj = Connection.yaGson.toJson ( box );
 		connection.formatter.format ( obj + "\n" );
+		if ( box.getBoxType () == BoxFather.BoxType.gameField )
+			System.out.println ("data" );
 		connection.formatter.flush ( );
+		//System.out.println ("send Box :" + box.getBoxType () );
 	}
 }
 
@@ -102,6 +130,11 @@ class Get implements Runnable {
 	}
 	@Override
 	public void run () {
+		try {
+			Thread.sleep ( 1 );
+		} catch (InterruptedException e) {
+			e.printStackTrace ( );
+		}
 		while ( true ) {
 			String get = "";
 			while ( true ) {
@@ -111,6 +144,7 @@ class Get implements Runnable {
 				}
 			}
 			connection.tmp = Connection.yaGson.fromJson ( get , BoxFather.class );
+		//	System.out.println ("get Box  :" + connection.tmp.getBoxType () );
 			switch ( connection.tmp.getBoxType ( ) ) {
 				case gameField:
 					MainPanel.setGameField ( ( GameFields ) connection.tmp );
@@ -118,6 +152,7 @@ class Get implements Runnable {
 					break;
 				case simple:
 					connection.simple = connection.tmp;
+					//System.out.println ("make simple full!!!!" );
 					break;
 			}
 		}

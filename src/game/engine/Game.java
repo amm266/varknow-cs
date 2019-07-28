@@ -83,6 +83,7 @@ public class Game{
 		ImagesInit ( );
 	}
 	public void paint ( Graphics2D g2 ) {
+		System.out.println ("in Game" );
 		if ( level == LEVEL.Win ) {
 			try {
 				bufferedImage_Win = ImageIO.read ( new File ( "resources/win.png" ) );

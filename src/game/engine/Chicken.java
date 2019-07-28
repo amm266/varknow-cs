@@ -7,9 +7,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 
 public class Chicken implements Animatable {
-	private BufferedImage bufferImageChicken;
+	private transient BufferedImage bufferImageChicken;
 	private double x;
 	private double y;
 	private double vx;

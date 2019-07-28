@@ -70,6 +70,7 @@ public class SecondMenu extends JPanel implements Animatable {
         if ((x > 440 & x < 560) & (y < 330 & y > 300)) {
             //START NEW GAME
             StartNewGame=true;
+            System.out.println ("new Game Button pressed!" );
             TimeOfStartGame=System.currentTimeMillis();
             MainPanel.startNewGame ();
 
