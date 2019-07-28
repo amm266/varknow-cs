@@ -16,11 +16,11 @@ public class Box extends BoxFather {
 		startNewGame,
 	}
 	public Box( Ask ask){
-		super(BoxType.simple);
+		super(BoxType.simple,false);
 		this.ask = ask;
 	}
 	public Box(){
-		super(BoxType.simple);
+		super(BoxType.simple,false);
 	}
 	private MainPanel.STATE state;
 	private Game.STAGE stage;

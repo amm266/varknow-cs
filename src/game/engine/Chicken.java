@@ -10,7 +10,14 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public class Chicken implements Animatable {
-	private transient BufferedImage bufferImageChicken;
+	private static transient BufferedImage bufferImageChicken;
+	{
+		try {
+			bufferImageChicken = ImageIO.read ( new File ( "resources/rchicken.png" ) );
+		} catch (IOException e) {
+			e.printStackTrace ( );
+		}
+	}
 	private double x;
 	private double y;
 	private double vx;
@@ -20,6 +27,28 @@ public class Chicken implements Animatable {
 	private double angel3;
 	private double angel2;
 	private double angel1;
+	public Chicken (ChickenForSend chickenForSend){
+		x = chickenForSend.x;
+		y = chickenForSend.y;
+		vx = chickenForSend.vx;
+		vy = chickenForSend.vy;
+		MiddelOfChickenX = chickenForSend.MiddelOfChickenX;
+		angel3 = chickenForSend.angel3;
+		angel2 = chickenForSend.angel2;
+		angel1 = chickenForSend.angel1;
+
+	}
+	public double getAngel1 () {
+		return angel1;
+	}
+
+	public double getAngel2 () {
+		return angel2;
+	}
+
+	public double getAngel3 () {
+		return angel3;
+	}
 
 	public double getX () {
 		return x;
@@ -47,12 +76,6 @@ public class Chicken implements Animatable {
 		this.vx = vx;
 		this.vy = vy;
 		//ChickenExictance=true;
-		try {
-			bufferImageChicken = ImageIO.read ( new File ( "resources/rchicken.png" ) );
-
-		} catch (IOException ex) {
-			ex.printStackTrace ( );
-		}
 	}
 	@Override
 	public void move () {

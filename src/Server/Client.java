@@ -58,7 +58,7 @@ public class Client implements Runnable {
 			int a=1;
 			//process
 			System.out.println ("start process" );
-			BoxFather answer = new BoxFather ( BoxFather.BoxType.simple);
+			BoxFather answer = new BoxFather ( BoxFather.BoxType.simple,false);
 			if(box == null){
 				int w=1;
 			}

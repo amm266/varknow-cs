@@ -117,7 +117,7 @@ class Send implements Runnable {
 		String obj = Connection.yaGson.toJson ( box );
 		connection.formatter.format ( obj + "\n" );
 		if ( box.getBoxType () == BoxFather.BoxType.gameField )
-			System.out.println ("data" );
+			System.out.println ("data"+obj.toCharArray ().length );
 		connection.formatter.flush ( );
 		//System.out.println ("send Box :" + box.getBoxType () );
 	}
@@ -144,7 +144,6 @@ class Get implements Runnable {
 				}
 			}
 			connection.tmp = Connection.yaGson.fromJson ( get , BoxFather.class );
-		//	System.out.println ("get Box  :" + connection.tmp.getBoxType () );
 			switch ( connection.tmp.getBoxType ( ) ) {
 				case gameField:
 					MainPanel.setGameField ( ( GameFields ) connection.tmp );
@@ -152,7 +151,6 @@ class Get implements Runnable {
 					break;
 				case simple:
 					connection.simple = connection.tmp;
-					//System.out.println ("make simple full!!!!" );
 					break;
 			}
 		}

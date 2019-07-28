@@ -17,11 +17,6 @@ import java.awt.event.*;
 import java.awt.event.KeyListener;
 
 public class MainPanel extends JPanel implements KeyListener {
-	private static YaGson yaGson;
-	static {
-		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ();
-		yaGson = yaGsonBuilder.create ();
-	}
 	private JTextField jTextField0 = new JTextField ( );
 	private JTextField jTextField1 = new JTextField ( );
 	private JTextField jTextField2 = new JTextField ( );

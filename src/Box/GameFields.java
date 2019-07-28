@@ -1,30 +1,33 @@
 package Box;
 
-import game.engine.Chicken;
-import game.engine.Egg;
-import game.engine.Rocket;
-import game.engine.Tir;
+import game.engine.*;
 
 import java.util.ArrayList;
 
 public class GameFields extends BoxFather {
+	private ArrayList<ChickenForSend> chickenForSends;
 	private ArrayList<Chicken> chickens;
 	private ArrayList<Tir> tirs;
 	private ArrayList<Egg> eggs;
 	private ArrayList<Rocket> rockets;
-	public  GameFields(ArrayList<Chicken> chickens,
+	public  GameFields(ArrayList<ChickenForSend> chickens,
 							  ArrayList<Tir> tirs,
 							  ArrayList<Egg> eggs,
 							  ArrayList<Rocket> rockets
 	){
-		super(BoxType.gameField);
-		this.chickens = chickens;
+		super(BoxType.gameField,false);
+		this.chickenForSends = chickens;
 		this.tirs = tirs;
 		this.eggs = eggs;
 		this.rockets = rockets;
 	}
+
+	public ArrayList<ChickenForSend> getChickenForSends () {
+		return chickenForSends;
+	}
+
 	public GameFields(){
-		super(BoxType.gameField);
+		super(BoxType.gameField,false);
 	}
 	public void setChickens ( ArrayList<Chicken> chickens ) {
 		this.chickens = chickens;

@@ -6,8 +6,10 @@ public class BoxFather {
 		simple
 	}
 	BoxType boxType;
-	public BoxFather(BoxType type){
+	boolean exeptAnAnswer;
+	public BoxFather(BoxType type,boolean exeptAnAnswer ){
 		this.boxType = type;
+		this.exeptAnAnswer = exeptAnAnswer;
 	}
 	public void setBoxType ( BoxType boxType ) {
 		this.boxType = boxType;

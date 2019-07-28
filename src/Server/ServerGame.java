@@ -1,6 +1,7 @@
 package Server;
 
 import com.gilecode.yagson.YaGson;
+import com.google.gson.Gson;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu_Setting;
 import game.engine.*;
@@ -50,9 +51,7 @@ public class ServerGame extends Thread {
 	public void run () {
 		while ( true ) {
 			try {
-				System.out.println ("time1   :"+ System.currentTimeMillis () );
-				sleep ( 10 );
-				System.out.println ("time2   :"+ System.currentTimeMillis () );
+				sleep ( 160 );
 			} catch (InterruptedException e) {
 				e.printStackTrace ( );
 			}
@@ -108,12 +107,16 @@ public class ServerGame extends Thread {
 	}
 	public GameFields sendGameFields ( ){
 		if ( chickens.size ()>0 ){
-			YaGson yaGson = new YaGson ();
+			Gson yaGson = new Gson ();
 			String c = yaGson.toJson ( chickens.get ( 0 ) );
 			String r = yaGson.toJson ( rockets.get ( 0 ) );
 			int o = 1;
 		}
-		GameFields gameFields = new GameFields (new ArrayList<> (  ),tirs,eggs,rockets  );
+		ArrayList<ChickenForSend> chickenForSends = new ArrayList<> (  );
+		for ( Chicken chicken:chickens ){
+			chickenForSends.add ( new ChickenForSend ( chicken ) );
+		}
+		GameFields gameFields = new GameFields (chickenForSends,tirs,eggs,rockets  );
 		for ( Client client:clients ){
 			client.getConnection ().send ( gameFields );
 		}
