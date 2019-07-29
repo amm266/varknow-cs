@@ -14,6 +14,8 @@ public class Box extends BoxFather {
 		fire,
 		chick,
 		startNewGame,
+		saveGame,
+		loadGame
 	}
 	public Box( Ask ask){
 		super(BoxType.simple,false);

@@ -13,20 +13,21 @@ import java.io.IOException;
 public class Stronge implements Animatable {
     private double x;
     private double y;
-    private double vy;
+    private static double vy;
+    private static BufferedImage StrongBufferImage;
 
+    static {
+        try {
+            StrongBufferImage = ImageIO.read ( new File ( "resources/point.png" ) );
+        } catch (IOException e) {
+            e.printStackTrace ( );
+        }
+        vy = 1;
 
-    //public static boolean TirExitance=true;
-
-
-    public Stronge(double x, double y, double vy) {
+    }
+    public Stronge(double x, double y) {
         this.x = x;
         this.y = y;
-        this.vy = vy;
-        //TirExitance=true;
-
-
-
     }
 
     public double getX() {
@@ -38,14 +39,9 @@ public class Stronge implements Animatable {
     }
 
     public void move() {
-
         y += 2*vy;
-
     }
-
     public void paint(Graphics2D g2) {
-
-
-        g2.drawImage(Game.StrongBufferImage, (int)x, (int)y,30,30, null);
+        g2.drawImage(StrongBufferImage, (int)x, (int)y,30,30, null);
     }
 }

@@ -12,42 +12,48 @@ import java.io.IOException;
 public class Rocket implements Animatable {
     private int x;
     private int y;
-    public static int LastXRocket;
-    public static int LastYRocket;
-    private static int hart =5;
-    private static int Score=0;
-    private static int Strong=3;
-
-
-    public static void setHart ( int hart ) {
-        Rocket.hart = hart;
+    public int LastXRocket;
+    public int LastYRocket;
+    private int hart =5;
+    private int Score=0;
+    private int Strong=3;
+    private static BufferedImage image;
+    private static BufferedImage image1;
+    static {
+        try {
+            image = ImageIO.read(new File("resources/rocket.png"));
+            image1 = ImageIO.read(new File("resources/rocket2.png"));
+        } catch (IOException e) {
+            e.printStackTrace ( );
+        }
     }
 
-    public static int getHart () {
+    public void setHart ( int hart ) {
+       this.hart = hart;
+    }
+
+    public int getHart () {
         return hart;
     }
 
-    public static void setScore ( int score ) {
+    public void setScore ( int score ) {
         Score = score;
     }
 
-    public static void setStrong ( int strong ) {
+    public void setStrong ( int strong ) {
         Strong = strong;
     }
 
-    public static int getScore () {
+    public int getScore () {
         return Score;
     }
 
-    public static int getStrong () {
+    public int getStrong () {
         return Strong;
     }
-    public static void decreaseHart(int value){
+    public void decreaseHart(int value){
         hart -=value;
     }
-    private transient BufferedImage bufferedImage;
-
-
     public Rocket(int x, int y) {
         this.x = x;
         this.y = y;
@@ -64,21 +70,16 @@ public class Rocket implements Animatable {
     }
     @Override
     public void paint(Graphics2D g2) {
-//        g2.setColor(new Color(135, 109, 79));
-//        g2.fillRect(x - 50, y - 25, 100, 50);
-        try {
-            if(SecondMenu_Setting.TypeOfRocket() == SecondMenu_Setting.TypeOfRocket.RED) {
-                bufferedImage = ImageIO.read(new File("resources/rocket.png"));
+        BufferedImage bufferedImage = null;
+        if(SecondMenu_Setting.TypeOfRocket() == SecondMenu_Setting.TypeOfRocket.RED) {
+            bufferedImage = image;
 
-            }
-            if(SecondMenu_Setting.TypeOfRocket() == SecondMenu_Setting.TypeOfRocket.GREEN){
-                bufferedImage = ImageIO.read(new File("resources/rocket2.png"));
-
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
-        if(MainPanel.statePauseMenu == false) {
+        if(SecondMenu_Setting.TypeOfRocket() == SecondMenu_Setting.TypeOfRocket.GREEN){
+            bufferedImage = image1;
+
+        }
+        if( ! MainPanel.statePauseMenu ) {
             if (SecondMenu_Setting.TypeOfRocket() == SecondMenu_Setting.TypeOfRocket.RED) {
                 g2.drawImage(bufferedImage, x - bufferedImage.getWidth() / 2, y - bufferedImage.getHeight() / 2, null);
             }
@@ -94,6 +95,5 @@ public class Rocket implements Animatable {
     }
     @Override
     public void move() {
-
     }
 }

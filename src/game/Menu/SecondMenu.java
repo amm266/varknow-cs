@@ -26,7 +26,7 @@ package game.Menu;
         import java.text.AttributedCharacterIterator;
         import java.util.Map;
 
-public class SecondMenu extends JPanel implements Animatable {
+public class SecondMenu extends JPanel implements Animatable,KeyListener,ActionListener {
 
     private SecondMenu_AboutUs secondMenu_aboutUs = new SecondMenu_AboutUs();
     private SecondMenu_Setting secondMenu_setting = new SecondMenu_Setting();
@@ -36,6 +36,30 @@ public class SecondMenu extends JPanel implements Animatable {
     private boolean StartNewGame = false;
     private int x;
     private int y;
+
+    @Override
+    public void keyTyped ( KeyEvent e ) {
+        System.out.println ("save" );
+
+    }
+
+    @Override
+    public void keyPressed ( KeyEvent e ) {
+        System.out.println ("save" );
+
+    }
+
+    @Override
+    public void keyReleased ( KeyEvent e ) {
+        System.out.println ("save" );
+
+    }
+
+    @Override
+    public void actionPerformed ( ActionEvent e ) {
+        System.out.println ("save" );
+    }
+
     private enum TypeOfRocket {
         RED ,
         GREEN ,

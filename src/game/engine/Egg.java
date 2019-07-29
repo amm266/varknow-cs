@@ -13,20 +13,22 @@ import java.io.IOException;
 public class Egg implements Animatable {
     private double x;
     private double y;
-    private double vy;
-
+    private static double vy = 1;
+    private static BufferedImage image;
+    static {
+        try {
+            image = ImageIO.read ( new File ( "resources/Chicken_egg_broken_break-512.png" ) );
+        } catch (IOException e) {
+            e.printStackTrace ( );
+        }
+    }
 
     //public static boolean TirExitance=true;
 
 
-    public Egg(double x, double y, double vy) {
+    public Egg(double x, double y) {
         this.x = x;
         this.y = y;
-        this.vy = vy;
-        //TirExitance=true;
-
-
-
     }
 
     public double getX() {
@@ -38,13 +40,10 @@ public class Egg implements Animatable {
     }
 
     public void move() {
-
         y += 2*vy;
-
     }
 
     public void paint(Graphics2D g2) {
-
-            g2.drawImage(Game.SmartEggbufferedImage, (int)x, (int)y,30,30, null);
+            g2.drawImage(image, (int)x, (int)y,30,30, null);
     }
 }

@@ -1,23 +1,17 @@
 package game;
 
 import game.Menu.PauseMenu;
-import game.engine.Sound;
 import game.swing.MainPanel;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.PushbackInputStream;
-import java.sql.Time;
 
-public class PaintLoop extends Thread {
+public class PaintLoop extends Thread implements KeyListener {
     private MainPanel mainPanel;
-    public boolean runnng = true;
+    public boolean running = true;
     private long FirstTime ;
     private long LastTime;
     PauseMenu pauseMenu = new PauseMenu();
-
     public PaintLoop(MainPanel mainPanel) {
         this.mainPanel = mainPanel;
     }
@@ -25,8 +19,8 @@ public class PaintLoop extends Thread {
     public void run() {
         while (true) {
             //FirstTime= System.currentTimeMillis();
-            runnng=mainPanel.state();
-               if (runnng & ! MainPanel.statePauseMenu ) {
+            running =mainPanel.state();
+               if ( running & ! MainPanel.statePauseMenu ) {
                  //  mainPanel.moveGame();
                }
                 mainPanel.repaint();
@@ -38,5 +32,19 @@ public class PaintLoop extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+    @Override
+    public void keyTyped ( KeyEvent e ) {
+        System.out.println ( "save" );
+    }
+
+    @Override
+    public void keyPressed ( KeyEvent e ) {
+        System.out.println ( "save" );
+    }
+
+    @Override
+    public void keyReleased ( KeyEvent e ) {
+        System.out.println ( "save" );
     }
 }

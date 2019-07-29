@@ -1,8 +1,6 @@
 package game.swing;
 
-import com.gilecode.yagson.YaGson;
-import com.gilecode.yagson.YaGsonBuilder;
-import game.Connection;
+import game.MyConnection;
 import game.Menu.FirstMenu;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu;
@@ -39,10 +37,11 @@ public class MainPanel extends JPanel implements KeyListener {
 	public static int Temprature = 0;
 	public static long MainTime = System.currentTimeMillis ( );
 	private long TimeOfBombShoot = 0;
-	private static Connection connection;
+	private static MyConnection myConnection;
 
 	@Override
 	public void keyTyped ( KeyEvent e ) {
+		System.out.println ( "save" );
 	}
 	@Override
 	public void keyPressed ( KeyEvent e ) {
@@ -52,6 +51,7 @@ public class MainPanel extends JPanel implements KeyListener {
 	}
 	@Override
 	public void keyReleased ( KeyEvent e ) {
+		System.out.println ( "save" );
 	}
 	public enum STATE {
 		SEcondMenu,
@@ -60,8 +60,8 @@ public class MainPanel extends JPanel implements KeyListener {
 		Game
 	};
 
-	public static Connection getConnection () {
-		return connection;
+	public static MyConnection getMyConnection () {
+		return myConnection;
 	}
 
 	private static STATE state = STATE.FIrstMenu;
@@ -71,7 +71,8 @@ public class MainPanel extends JPanel implements KeyListener {
 	}
 
 	public MainPanel ( String ip ) {
-		connection = new Connection ( ip );
+		//jTextField0.addActionListener ( this );
+		myConnection = new MyConnection ( ip );
 		new MoveRocket ().start ();
 		setBounds ( 0 , 0 , 2000 , 1100 );
 		game = new Game ( 2000 , 1100 );
@@ -116,7 +117,7 @@ public class MainPanel extends JPanel implements KeyListener {
 			}
 			@Override
 			public void keyPressed ( KeyEvent e ) {
-				if ( e.getKeyCode ( ) == KeyEvent.VK_S ) {
+				if ( e.getKeyCode ( ) == KeyEvent.KEY_PRESSED) {
 					System.out.println ( "save" );
 				}
 				System.out.println ( "pressed" );
@@ -138,7 +139,7 @@ public class MainPanel extends JPanel implements KeyListener {
 				box.setX ( x );
 				box.setY ( y );
 				if ( state == STATE.Game ) {
-				//	connection.connection ( box );
+				//	myConnection.myConnection ( box );
 				}
 				MoveRocket.setLocation ( x,y );
 			}
@@ -151,18 +152,15 @@ public class MainPanel extends JPanel implements KeyListener {
 					FirstMenu.buttonClicked ( x , y , jTextField0 , jTextField1 );
 					System.out.println ( FirstMenu.counterOfPlayer );
 				}
-
 				if ( state == STATE.SEcondMenu ) {
 					SecondMenu.buttonClicked ( x , y );
 				}
 				if ( state == STATE.Game && statePauseMenu ) {
 					PauseMenu.ButtonClicked ( x , y );
 				}
-
 				if ( state == STATE.Game & ! statePauseMenu ) {
 					if ( ShootCounter % 2 == 0 ) {
-						//todo
-						connection.connection ( new Box ( Box.Ask.fire ) );
+						myConnection.connection ( new Box ( Box.Ask.fire ) );
 						NumberOfShoot--;
 						TimeOfShoot = System.currentTimeMillis ( );
 						ShootCounter++;
@@ -241,10 +239,18 @@ public class MainPanel extends JPanel implements KeyListener {
 	public static BoxFather startNewGame(){
 		System.out.println ("new Game!" );
 		Box box = new Box ( Box.Ask.startNewGame );
-		BoxFather answer = connection.connection ( box );
+		BoxFather answer = myConnection.connection ( box );
 		state = STATE.Game;
 		System.out.println ("new Game!" );
 		return answer;
+	}
+	public static void save(){
+		Box box = new Box ( Box.Ask.saveGame );
+		myConnection.connection ( box );
+	}
+	public static void load(){
+		Box box = new Box ( Box.Ask.loadGame );
+		myConnection.connection ( box );
 	}
 }
 class MoveRocket extends Thread{
@@ -267,7 +273,7 @@ class MoveRocket extends Thread{
 			box.setX ( x );
 			box.setY ( y );
 			if ( MainPanel.getState () == MainPanel.STATE.Game ) {
-				MainPanel.getConnection ().connection ( box );
+				MainPanel.getMyConnection ().connection ( box );
 			}
 		}
 	}

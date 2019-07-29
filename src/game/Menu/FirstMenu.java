@@ -7,13 +7,14 @@ import xo.MainPanel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class FirstMenu extends JPanel implements Animatable {
+public class FirstMenu extends JPanel implements Animatable,KeyListener {
     private BufferedImage bufferedImage_logo;
     private BufferedImage bufferedImage_firstmenubackground;
     private int x;
@@ -24,6 +25,26 @@ public class FirstMenu extends JPanel implements Animatable {
     public static String NameOfPlayer;
     private JTextField jTextFieldInput;
     private JTextField jTextFieldOutput;
+    public FirstMenu(){
+//        addAncestorListener ( ( AncestorListener ) this );
+    }
+    @Override
+    public void keyTyped ( KeyEvent e ) {
+        System.out.println ("save" );
+
+    }
+
+    @Override
+    public void keyPressed ( KeyEvent e ) {
+        System.out.println ("save" );
+
+    }
+
+    @Override
+    public void keyReleased ( KeyEvent e ) {
+        System.out.println ("save" );
+
+    }
 
     public static enum CounterOfPlayer{
 

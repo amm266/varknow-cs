@@ -1,12 +1,12 @@
 package Server;
 
-import com.gilecode.yagson.YaGson;
 import com.google.gson.Gson;
 import game.Menu.PauseMenu;
 import game.Menu.SecondMenu_Setting;
 import game.engine.*;
 import game.swing.MainPanel;
 import Box.GameFields;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -14,87 +14,87 @@ import java.util.Objects;
 import java.util.Random;
 
 public class ServerGame extends Thread {
-	private ArrayList<Client> clients = new ArrayList<Client> (  );
-	public int LastXBomb;
-	public int LastYBomb;
-	private int width;
-	private int height;
-	private int HeightOfBomb = 3000000;
-	private int WidthOfBomb;
-	private boolean BombIsExploded = false;
-	public BufferedImage bufferedImageHeart;
-	public BufferedImage bufferedImagebackground;
-	private BufferedImage bufferedImageBomb;
-	private String NumberOfShoot = "" + MainPanel.NumberOfShoot;
-	public ArrayList<Rocket> rockets = new ArrayList<> ( );
-	private final ArrayList<Tir> tirs = new ArrayList<> ( );
-	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
-	private final ArrayList<Egg> eggs = new ArrayList<> ( );
-	private final ArrayList<Coin> coins = new ArrayList<> ( );
-	private final ArrayList<Stronge> stronges = new ArrayList<> ( );
-	static PauseMenu pauseMenu = new PauseMenu ( );
 	public static int NumberOfChickensG1 = 40;
 	public static int NumberOfChickensG2 = 50;
 	public static int NumberOfChickensG3 = 60;
 	public static int NumberOfChickensG4 = 70;
-	public int G1Transform = 0;
-	public FinalEgg finalEgg;
-	public int NumberOfEgg;
-	private long EggTime = System.currentTimeMillis ( );
-	private static ServerGame mainGame;
-	private String HeartOfRocketStr = "" + Rocket.getHart ( );
-	private String ScoreStr = "" + Rocket.getScore ( );
 	public static int NumberOfBomb;
 	public static Point center = new Point ( 350 , 350 );
+
+	private int width;
+
+	private int height;
+
+	private ArrayList<Client> clients = new ArrayList<Client> ( );
+
+	public volatile ArrayList<Rocket> rockets = new ArrayList<> ( );
+
+	private volatile ArrayList<Tir> tirs = new ArrayList<> ( );
+
+	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
+
+	private volatile ArrayList<Egg> eggs = new ArrayList<> ( );
+
+	private final ArrayList<Coin> coins = new ArrayList<> ( );
+
+	private ArrayList<Stronge> stronges = new ArrayList<> ( );
+
+	public int G1Transform = 0;
+
+	public FinalEgg finalEgg;
+
+	private long EggTime = System.currentTimeMillis ( );
+
+	public game.engine.Game.STAGE stage = game.engine.Game.STAGE.FIRST;
+
+	public game.engine.Game.LEVEL level = game.engine.Game.LEVEL.ONE;
+
+	public game.engine.Game.GROUP group = game.engine.Game.GROUP.ONE;
 
 	@Override
 	public void run () {
 		while ( true ) {
 			try {
-				sleep ( 160 );
+				sleep ( 100 );
 			} catch (InterruptedException e) {
 				e.printStackTrace ( );
 			}
 			this.chick ( );
 			this.move ( );
-			this.sendGameFields ();
+			this.sendGameFields ( );
 		}
 	}
 
-	public static enum STAGE {
-		FIRST,
-		SECOND,
-		THIRD,
-		FINAL
+	public void loadGame ( GameForSave gameForSave ) {
+		this.width = gameForSave.width;
+		this.height = gameForSave.height;
+		this.G1Transform = gameForSave.G1Transform;
+		this.stage = gameForSave.stage;
+		this.level = gameForSave.level;
+		this.group = gameForSave.group;
+		this.tirs = gameForSave.tirs;
+		this.chickens = gameForSave.chickens;
+		this.stronges = gameForSave.stronges;
+		this.eggs = gameForSave.eggs;
+		this.rockets.add ( gameForSave.rockets );
 	}
 
-	;
-
-	public static enum LEVEL {
-		ONE,
-		TWO,
-		THREE,
-		FOUR,
-		Win
+	public GameForSave saveGame () {
+		GameForSave gameForSave = new GameForSave ( );
+		gameForSave.width = this.width;
+		gameForSave.height = this.height;
+		gameForSave.G1Transform = this.G1Transform;
+		gameForSave.stage = this.stage;
+		gameForSave.level = this.level;
+		gameForSave.group = this.group;
+		gameForSave.tirs = this.tirs;
+		gameForSave.chickens = this.chickens;
+		gameForSave.stronges = this.stronges;
+		gameForSave.eggs = this.eggs;
+		return gameForSave;
 	}
 
-	;
-
-	public static enum GROUP {
-		ONE,
-		TWO,
-		THREE,
-		FOUR,
-		FINAL
-	}
-
-	;
-	public static game.engine.Game.STAGE stage = game.engine.Game.STAGE.FIRST;
-	public static game.engine.Game.LEVEL level = game.engine.Game.LEVEL.ONE;
-	public static game.engine.Game.GROUP group = game.engine.Game.GROUP.ONE;
-
-
-	public ServerGame ( int width , int height,Client client ) {
+	public ServerGame ( int width , int height , Client client ) {
 		this.width = width;
 		this.height = height;
 		this.clients.add ( client );
@@ -105,35 +105,38 @@ public class ServerGame extends Thread {
 		rockets.add ( rocket );
 		return rocket;
 	}
-	public GameFields sendGameFields ( ){
-		if ( chickens.size ()>0 ){
-			Gson yaGson = new Gson ();
+
+	public GameFields sendGameFields () {
+		if ( chickens.size ( ) > 0 ) {
+			Gson yaGson = new Gson ( );
 			String c = yaGson.toJson ( chickens.get ( 0 ) );
 			String r = yaGson.toJson ( rockets.get ( 0 ) );
 			int o = 1;
 		}
-		ArrayList<ChickenForSend> chickenForSends = new ArrayList<> (  );
-		for ( Chicken chicken:chickens ){
+		ArrayList<ChickenForSend> chickenForSends = new ArrayList<> ( );
+		for ( Chicken chicken : chickens ) {
 			chickenForSends.add ( new ChickenForSend ( chicken ) );
 		}
-		GameFields gameFields = new GameFields (chickenForSends,tirs,eggs,rockets  );
-		for ( Client client:clients ){
-			client.getConnection ().send ( gameFields );
+		GameFields gameFields = new GameFields ( chickenForSends , tirs , eggs , rockets );
+		for ( Client client : clients ) {
+			client.getMyConnection ( ).send ( gameFields );
 		}
 		return gameFields;
 	}
+
 	public void paint () {
-		if ( Rocket.getHart ( ) <= 0 ) {
-			System.out.println ( "loooooooooooose" );
-		}
+//		if ( Rocket.getHart ( ) <= 0 ) {
+//			System.out.println ( "loooooooooooose" );
+//		}
 		//moving the background
 		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
 			Egg egg = eggs.get ( k );
-			if ( CheckQuancidence ( egg ) ) {
+			Rocket rocket = CheckQuancidence ( egg );
+			if ( rocket != null ) {
 				System.out.println ( "fosh bad" );
 				eggs.remove ( egg );
-				Rocket.decreaseHart ( 1 );
-				System.out.println ( "harts of rocket  " + Rocket.getHart ( ) );
+				rocket.decreaseHart ( 1 );
+				System.out.println ( "harts of rocket  " + rocket.getHart ( ) );
 				k--;
 			}
 			if ( egg.getY ( ) > 1100 ) {
@@ -175,11 +178,12 @@ public class ServerGame extends Thread {
 				coins.remove ( coin );
 				i--;
 			}
-			if ( CheckQuancidence ( coin ) ) {
-				Rocket.setScore ( Rocket.getScore ( ) + 2 );
+			Rocket rocket = CheckQuancidence ( coin );
+			if ( rocket != null ) {
+				rocket.setScore ( rocket.getScore ( ) + 2 );
 				coins.remove ( coin );
 				i--;
-				System.out.println ( "score:  " + Rocket.getScore ( ) );
+				System.out.println ( "score:  " + rocket.getScore ( ) );
 			}
 
 		}
@@ -191,8 +195,9 @@ public class ServerGame extends Thread {
 				stronges.remove ( stronge );
 				i--;
 			}
-			if ( CheckQuancidence ( stronge ) ) {
-				Rocket.setStrong ( Rocket.getStrong ( ) + 1 );
+			Rocket rocket = CheckQuancidence ( stronge );
+			if ( rocket != null ) {
+				rocket.setStrong ( rocket.getStrong ( ) + 1 );
 				Tir.StrongOfTir++;
 				stronges.remove ( stronge );
 				i--;
@@ -214,10 +219,11 @@ public class ServerGame extends Thread {
 				chicken.SetMiddelOfChickenX ( 0 );
 			}
 		}
+		int numberOfEgg;
 		if ( stage == game.engine.Game.STAGE.FIRST ) {
 			if ( chickens.size ( ) > 0 ) {
 				NumberOfChickensG1 = chickens.size ( );
-				NumberOfEgg = NumberOfChickensG1;
+				numberOfEgg = NumberOfChickensG1;
 			}
 			if ( chickens.size ( ) <= 1 ) {
 				stage = game.engine.Game.STAGE.SECOND;
@@ -230,7 +236,7 @@ public class ServerGame extends Thread {
 			//System.out.println("stage2");
 			if ( chickens.size ( ) > 0 ) {
 				NumberOfChickensG2 = chickens.size ( );
-				NumberOfEgg = NumberOfChickensG2;
+				numberOfEgg = NumberOfChickensG2;
 			}
 			if ( NumberOfChickensG2 <= 1 ) {
 				stage = game.engine.Game.STAGE.THIRD;
@@ -243,7 +249,7 @@ public class ServerGame extends Thread {
 			//System.out.println("stage3");
 			if ( chickens.size ( ) > 0 ) {
 				NumberOfChickensG3 = chickens.size ( );
-				NumberOfEgg = NumberOfChickensG3;
+				numberOfEgg = NumberOfChickensG3;
 			}
 			if ( chickens.size ( ) <= 1 ) {
 				stage = game.engine.Game.STAGE.FINAL;
@@ -415,9 +421,7 @@ public class ServerGame extends Thread {
 
 	public void Strong ( double StrongX , double StrongY ) {
 		synchronized (stronges) {
-			stronges.add ( new Stronge ( StrongX ,
-					StrongY ,
-					1 ) );
+			stronges.add ( new Stronge ( StrongX , StrongY ) );
 		}
 	}
 
@@ -433,9 +437,7 @@ public class ServerGame extends Thread {
 		synchronized (eggs) {
 			int r = 25;
 			for ( int i = 0 ; i < NumberOfEggs ; i++ ) {
-				eggs.add ( new Egg ( Eggx ,
-						Eggy ,
-						1 ) );
+				eggs.add ( new Egg ( Eggx , Eggy ) );
 			}
 		}
 	}
@@ -540,20 +542,25 @@ public class ServerGame extends Thread {
 		return ( tir.getY ( ) <= 575 & tir.getX ( ) <= 1100 & tir.getX ( ) >= 700 );
 	}
 
-	public boolean CheckQuancidence ( Egg egg ) {
+	public Rocket CheckQuancidence ( Egg egg ) {
 		return CheckQuancidence ( egg.getY ( ) , egg.getX ( ) );
 	}
 
-	public boolean CheckQuancidence ( Coin coin ) {
+	public Rocket CheckQuancidence ( Coin coin ) {
 		return CheckQuancidence ( coin.getY ( ) , coin.getX ( ) );
 	}
 
-	public boolean CheckQuancidence ( Stronge stronge ) {
+	public Rocket CheckQuancidence ( Stronge stronge ) {
 		return CheckQuancidence ( stronge.getY ( ) , stronge.getX ( ) );
 	}
 
-	public boolean CheckQuancidence ( double y , double x ) {
-		return ( y >= Rocket.LastYRocket - 20 & y <= Rocket.LastYRocket + 20 ) & ( x >= Rocket.LastXRocket - 20 & x <= Rocket.LastXRocket + 20 );
+	public Rocket CheckQuancidence ( double y , double x ) {
+		for ( Rocket rocket : rockets ) {
+			if ( y >= rocket.LastYRocket - 20 & y <= rocket.LastYRocket + 20 && x >= rocket.LastXRocket - 20 & x <= rocket.LastXRocket + 20 ) {
+				return rocket;
+			}
+		}
+		return null;
 	}
 
 	public int Random ( int n ) {

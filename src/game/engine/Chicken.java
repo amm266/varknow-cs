@@ -22,7 +22,7 @@ public class Chicken implements Animatable {
 	private double y;
 	private double vx;
 	private double vy;
-	public int MiddelOfChickenX;
+	private int MiddelOfChickenX;
 	//public static boolean ChickenExictance = true;
 	private double angel3;
 	private double angel2;
@@ -32,24 +32,8 @@ public class Chicken implements Animatable {
 		y = chickenForSend.y;
 		vx = chickenForSend.vx;
 		vy = chickenForSend.vy;
-		MiddelOfChickenX = chickenForSend.MiddelOfChickenX;
-		angel3 = chickenForSend.angel3;
-		angel2 = chickenForSend.angel2;
-		angel1 = chickenForSend.angel1;
 
 	}
-	public double getAngel1 () {
-		return angel1;
-	}
-
-	public double getAngel2 () {
-		return angel2;
-	}
-
-	public double getAngel3 () {
-		return angel3;
-	}
-
 	public double getX () {
 		return x;
 	}
@@ -75,7 +59,6 @@ public class Chicken implements Animatable {
 		this.y = y;
 		this.vx = vx;
 		this.vy = vy;
-		//ChickenExictance=true;
 	}
 	@Override
 	public void move () {
