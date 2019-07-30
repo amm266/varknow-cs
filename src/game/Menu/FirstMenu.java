@@ -3,7 +3,7 @@ package game.Menu;
 import game.Main;
 import game.engine.Animatable;
 import xo.MainFrame;
-import xo.MainPanel;
+import game.swing.MainPanel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -62,8 +62,8 @@ public class FirstMenu extends JPanel implements Animatable,KeyListener {
         this.jTextFieldOutput=jTextFieldOutput;
         if ((x > 170 & x < 270) & (y < 640 & y > 600)) {
             // ENTER
-            ENTER = true;
-
+            //ENTER = true;
+            MainPanel.login ();
         }
 
         if ((x > 430 & x < 530) & (y < 640 & y > 600)) {
@@ -74,7 +74,8 @@ public class FirstMenu extends JPanel implements Animatable,KeyListener {
 
         if ((x > 700 & x < 800) & (y < 640 & y > 600)) {
             // ADD
-            ADD = true;
+           // ADD = true;
+            MainPanel.createAccount ();
             NameOfPlayer=jTextFieldInput.getText();
             if(jTextFieldInput != null) {
                 counterOfPlayer =CounterOfPlayer.third;

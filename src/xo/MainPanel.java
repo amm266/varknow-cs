@@ -18,7 +18,8 @@ public class MainPanel extends JPanel {
         int a=1;
     }
 
-    String getWinner() {
+
+	String getWinner() {
         for (int i = 0; i < 3; i++) {
             String s = buttons[i][0].getText();
             boolean ok = !s.equals("");

@@ -15,10 +15,10 @@ import java.awt.event.*;
 import java.awt.event.KeyListener;
 
 public class MainPanel extends JPanel implements KeyListener {
-	private JTextField jTextField0 = new JTextField ( );
-	private JTextField jTextField1 = new JTextField ( );
-	private JTextField jTextField2 = new JTextField ( );
-	private JTextField jTextField3 = new JTextField ( );
+	private static JTextField jTextField0 = new JTextField ( );
+	private static JTextField jTextField1 = new JTextField ( );
+	private static JTextField jTextField2 = new JTextField ( );
+	private static JTextField jTextField3 = new JTextField ( );
 	private boolean GameState = false;
 	private boolean MenuState = false;
 	private static Game game;
@@ -139,7 +139,7 @@ public class MainPanel extends JPanel implements KeyListener {
 			public void mouseMoved ( MouseEvent e ) {
 				x = e.getX ( );
 				y = e.getY ( );
-				Box box = new Box ( Box.Ask.setLocation  );
+				Box box = new Box ( Box.Ask.setLocation,false  );
 				box.setX ( x );
 				box.setY ( y );
 				if ( state == STATE.Game ) {
@@ -164,7 +164,7 @@ public class MainPanel extends JPanel implements KeyListener {
 				}
 				if ( state == STATE.Game & ! statePauseMenu ) {
 					if ( ShootCounter % 2 == 0 ) {
-						myConnection.connection ( new Box ( Box.Ask.fire ) );
+						myConnection.connection ( new Box ( Box.Ask.fire,false ) );
 						System.out.println ("fire" );
 						NumberOfShoot--;
 						TimeOfShoot = System.currentTimeMillis ( );
@@ -250,21 +250,45 @@ public class MainPanel extends JPanel implements KeyListener {
 	}
 	public static BoxFather startNewGame(){
 		System.out.println ("new Game!" );
-		Box box = new Box ( Box.Ask.startNewGame );
+		Box box = new Box ( Box.Ask.startNewGame,true );
 		BoxFather answer = myConnection.connection ( box );
-		state = STATE.Game;
+		Box box1 = (Box ) answer;
+		if ( box1.isSucces () )
+			state = STATE.Game;
 		System.out.println ("new Game!" );
 		return answer;
 	}
 	public static void save(){
 		System.out.println ("save" );
-		Box box = new Box ( Box.Ask.saveGame );
+		Box box = new Box ( Box.Ask.saveGame,false );
 		myConnection.connection ( box );
 	}
 	public static void load(){
 		System.out.println ("load");
-		Box box = new Box ( Box.Ask.loadGame );
+		Box box = new Box ( Box.Ask.loadGame,false );
 		myConnection.connection ( box );
+	}
+	public static void login(){
+		String user1 = jTextField0.getText ();
+		String pass1 = jTextField1.getText ();
+		Box box = new Box ( Box.Ask.login,true );
+		askForAccount ( user1 , pass1,  box );
+	}
+
+	private static void askForAccount ( String user , String pass , Box box ) {
+		box.setUserName ( user );
+		box.setPass ( pass );
+		Box answer = ( Box ) myConnection.connection ( box );
+		if ( answer.isSucces ( ) ) {
+			state = STATE.SEcondMenu;
+		}
+	}
+
+	public static void createAccount(){
+		String user1 = jTextField0.getText ();
+		String pass1 = jTextField1.getText ();
+		Box box = new Box ( Box.Ask.createAccount,true );
+		askForAccount ( user1 , pass1,  box );
 	}
 }
 class MoveRocket extends Thread{
@@ -283,7 +307,7 @@ class MoveRocket extends Thread{
 			} catch (InterruptedException e) {
 				e.printStackTrace ( );
 			}
-			Box box = new Box ( Box.Ask.setLocation  );
+			Box box = new Box ( Box.Ask.setLocation ,false );
 			box.setX ( x );
 			box.setY ( y );
 			if ( MainPanel.getState () == MainPanel.STATE.Game ) {

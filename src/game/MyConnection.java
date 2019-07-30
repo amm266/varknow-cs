@@ -69,7 +69,8 @@ public class MyConnection {
 	}
 	public BoxFather connection ( BoxFather box ) {
 		send ( box );
-		//box = get ( );
+		if ( box.getexeptAnAnswer () )
+			box = get ( );
 		return box;
 	}
 

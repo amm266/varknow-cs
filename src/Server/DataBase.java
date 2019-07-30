@@ -1,4 +1,5 @@
 package Server;
+import Account.Account;
 import game.engine.Tir;
 
 import java.sql.*;
@@ -34,7 +35,7 @@ public class DataBase {
 	public ArrayList<Tir> loadTirs() throws SQLException {
 		ArrayList<Tir> tirs = new ArrayList<> (  );
 		String exe = "SELECT * FROM tirs";
-		resultSet = statement.executeQuery ( exe );
+		ResultSet resultSet = statement.executeQuery ( exe );
 		while ( resultSet.next () ){
 			Tir tir = new Tir ( resultSet.getDouble ( "x" )
 					,resultSet.getDouble ( "y" ),
@@ -46,5 +47,34 @@ public class DataBase {
 	private String createTir(Tir tir,int id){
 		String out = "(" +id+","+tir.getX ()+","+tir.getY ()+","+tir.getVx ()+","+tir.getVy ()+")";
 		return out;
+	}
+	public void setAccounts( ArrayList<Account> accounts ) throws SQLException {
+		String exe = "INSERT INTO accounts(username,password,score) VALUES ";
+		for ( Account account:accounts ){
+			executeForInsert ( exe+createAccount ( account ) );
+		}
+		System.out.println ("finish save in DB" );
+	}
+	public ArrayList<Account> loadAccounts() throws SQLException{
+		ArrayList<Account> accounts = new ArrayList<> (  );
+		String exe = "SELECT * FROM accounts";
+		resultSet = statement.executeQuery ( exe );
+		while ( resultSet.next () ){
+			Account account = Account.newAccount ( resultSet.getString ( "username" )
+					,resultSet.getString ( "password" ),
+					resultSet.getInt ( "score" ),true );
+			accounts.add ( account );
+		}
+		return accounts;
+	}
+	private String createAccount(Account account){
+		String out = "('" +account.getUserName ()+"','"+account.getPassword ()+"',"+account.getScore ()+")";
+		return out;
+	}
+
+	public void setAccounts ( Account account ) throws SQLException {
+		String exe = "INSERT INTO accounts(username,password,score) VALUES ";
+			executeForInsert ( exe+createAccount ( account ) );
+		System.out.println ("finish save in DB" );
 	}
 }

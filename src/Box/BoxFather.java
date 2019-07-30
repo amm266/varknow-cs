@@ -14,7 +14,9 @@ public class BoxFather {
 	public void setBoxType ( BoxType boxType ) {
 		this.boxType = boxType;
 	}
-
+	public boolean getexeptAnAnswer(){
+		return exeptAnAnswer;
+	}
 	public BoxType getBoxType () {
 		return boxType;
 	}

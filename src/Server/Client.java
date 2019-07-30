@@ -1,8 +1,7 @@
 package Server;
 
+import Account.Account;
 import Box.*;
-import com.gilecode.yagson.YaGson;
-import com.gilecode.yagson.YaGsonBuilder;
 import game.MyConnection;
 import game.engine.Rocket;
 import game.engine.Tir;
@@ -12,19 +11,19 @@ import java.io.IOException;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.Scanner;
 
 public class Client implements Runnable {
 	private static ArrayList<Client> clients = new ArrayList<> ( );
 	private MyConnection myConnection;
 	private ServerGame game;
+	private Account account = null;
 	private Rocket rocket;
 	private MainPanel.STATE state;
 	private DataBase dataBase;
+
 	public Client ( Socket socket ) {
 		try {
-			dataBase = new DataBase ();
+			dataBase = new DataBase ( );
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace ( );
 		} catch (SQLException e) {
@@ -53,17 +52,37 @@ public class Client implements Runnable {
 			int a = 1;
 			//process
 			System.out.println ( "start process" );
-			BoxFather answer = new BoxFather ( BoxFather.BoxType.simple , false );
+			Box answer = new Box ( false);
 			if ( box == null ) {
 				int w = 1;
 			}
 			if ( box.getAsk ( ) != null ) {
 				switch ( box.getAsk ( ) ) {
+					case createAccount:
+						try {
+							account = Account.newAccount ( box.getUserName ( ) , box.getPass ( ),0 ,false);
+						} catch (SQLException e) {
+							e.printStackTrace ( );
+						}
+						if ( account == null ) {
+							answer.setSucces ( false );
+						} else {
+							answer.setSucces ( true );
+						}
+						break;
+					case login:
+						account = Account.login ( box.getUserName (),box.getPass () );
+						if ( account == null ) {
+							answer.setSucces ( false );
+						} else {
+							answer.setSucces ( true );
+						}
+						break;
 					case state:
 						box.setStage ( game.stage );
 						break;
 					case fire:
-						game.chickens.clear ();
+						game.chickens.clear ( );
 						game.fire ( rocket );
 						break;
 					case setLocation:
@@ -78,12 +97,12 @@ public class Client implements Runnable {
 						break;
 					case saveGame:
 						try {
-							dataBase.saveTirs ( ServerGame.getTirs (),1 );
+							dataBase.saveTirs ( ServerGame.getTirs ( ) , 1 );
 						} catch (SQLException e) {
 							e.printStackTrace ( );
 						}
 						try {
-							SaveSystem.save ( SaveSystem.SaveMode.game , game , "game1.json" ,rocket);
+							SaveSystem.save ( SaveSystem.SaveMode.game , game , account.getUserName ( ) + "game.json" , rocket );
 						} catch (IOException e) {
 							e.printStackTrace ( );
 						}
@@ -91,25 +110,25 @@ public class Client implements Runnable {
 					case loadGame:
 						//try {
 						//	finishGame ( );
-							//game = new ServerGame ( 2000 , 1100 , this );
+						//game = new ServerGame ( 2000 , 1100 , this );
 						//	GameForSave gameForSave = ( GameForSave ) SaveSystem.load ( SaveSystem.SaveMode.game ,
-								//	"game1.json" ,this);
+						//	account.getUserName ()+"game.json" ,this);
 						//	if ( gameForSave == null ) {
 						//		System.out.println ( "fosh" );
 						//	} else {
 						//		game.loadGame ( gameForSave );
-							//	game.start ();
+						//	game.start ();
 						//	}
-					//	} catch (IOException e) {
+						//	} catch (IOException e) {
 						//	e.printStackTrace ( );
 						//}
-						game.chickens.clear ();
+						game.chickens.clear ( );
 
 						ArrayList<Tir> tirs;
 						try {
-							tirs =  dataBase.loadTirs ();
-							System.out.println (tirs );
-							System.out.println ("size"+tirs.size () );
+							tirs = dataBase.loadTirs ( );
+							System.out.println ( tirs );
+							System.out.println ( "size" + tirs.size ( ) );
 							ServerGame.setTirs ( tirs );
 						} catch (SQLException e) {
 							e.printStackTrace ( );

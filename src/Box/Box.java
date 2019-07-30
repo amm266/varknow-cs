@@ -15,37 +15,56 @@ public class Box extends BoxFather {
 		chick,
 		startNewGame,
 		saveGame,
-		loadGame
+		loadGame,
+		createAccount,
+		login
 	}
-	public Box( Ask ask){
-		super(BoxType.simple,false);
+	public Box( Ask ask,boolean exept){
+		super(BoxType.simple,exept);
 		this.ask = ask;
 	}
-	public Box(){
-		super(BoxType.simple,false);
+	public Box(boolean exept){
+		super(BoxType.simple,exept);
 	}
 	private MainPanel.STATE state;
 	private Game.STAGE stage;
 	private Ask ask;
 	private int x;
 	private int y;
+	private String userName;
+	private String pass;
 	private boolean succes;
 	private ArrayList<Chicken> chickens;
 	private ArrayList<Tir> tirs;
 	private ArrayList<Egg> eggs;
 	private ArrayList<Rocket> rockets;
 
-	public void setGameFields(ArrayList<Chicken> chickens,
-			ArrayList<Tir> tirs,
-			ArrayList<Egg> eggs,
-			ArrayList<Rocket> rockets
+	public String getPass () {
+		return pass;
+	}
+
+	public String getUserName () {
+		return userName;
+	}
+
+	public void setPass ( String pass ) {
+		this.pass = pass;
+	}
+
+	public void setUserName ( String userName ) {
+		this.userName = userName;
+	}
+
+	public void setGameFields( ArrayList<Chicken> chickens,
+							   ArrayList<Tir> tirs,
+							   ArrayList<Egg> eggs,
+							   ArrayList<Rocket> rockets
 	){
 		this.chickens = chickens;
 		this.tirs = tirs;
 		this.eggs = eggs;
 		this.rockets = rockets;
 	}
-
 	public void setSucces ( boolean succes ) {
 		this.succes = succes;
 	}
