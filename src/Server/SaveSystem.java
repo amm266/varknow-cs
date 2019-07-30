@@ -1,6 +1,7 @@
 package Server;
 
 import com.gilecode.yagson.YaGson;
+import game.engine.Rocket;
 
 import java.io.*;
 import java.sql.Statement;
@@ -10,15 +11,16 @@ public class SaveSystem {
 	public static enum SaveMode{
 		game
 	}
-	public static void save(SaveMode saveMode,Object object,String name) throws IOException {
+	public static void save( SaveMode saveMode, Object object, String name, Rocket rocket ) throws IOException {
 		FileWriter fileWriter ;
 			fileWriter = new FileWriter ( name );
 		switch ( saveMode ){
 			case game:
 				ServerGame serverGame = (ServerGame ) object;
-				GameForSave gameForSave = serverGame.saveGame ();
+				GameForSave gameForSave = serverGame.saveGame (rocket);
 				String save = yaGson.toJson ( gameForSave );
 				fileWriter.write ( save );
+				fileWriter.close ();
 				break;
 		}
 	}
@@ -29,6 +31,7 @@ public class SaveSystem {
 			switch ( saveMode ){
 				case game:
 					GameForSave gameForSave =  yaGson.fromJson ( fileReader,GameForSave.class );
+					int a=1;
 					client.setRocket (gameForSave.rockets);
 					return gameForSave;
 			}

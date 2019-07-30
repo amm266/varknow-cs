@@ -29,15 +29,15 @@ public class FinalEgg implements Animatable {
     @Override
     public void paint(Graphics2D g2) {
         if (HeightOfEgg < 75) {
-            g2.drawImage(Game.SmartEggbufferedImage, 650, (int) HeightOfEgg
-                    , 500, 500, null);
+            //g2.drawImage(SmartEggbufferedImage, 650, (int) HeightOfEgg
+           //         , 500, 500, null);
         } else {
             if (AmountOfLife <= 1)
                 Exictance = false;
 
             if (Exictance) {
-                g2.drawImage(Game.SmartEggbufferedImage, 700, (int) HeightOfEgg
-                        , 500, 500, null);
+                //g2.drawImage(Game.SmartEggbufferedImage, 700, (int) HeightOfEgg
+                   //     , 500, 500, null);
 
             }
         }
@@ -53,15 +53,15 @@ public class FinalEgg implements Animatable {
                         finalEggShoot.move();
 
 
-                    if(Math.abs(finalEggShoot.getX()- (Rocket.LastXRocket+5))<5 & Math.abs(finalEggShoot.getY()- (Rocket.LastYRocket+5))<5){
-                        Rocket.decreaseHart ( 1 );
-                        finalEggShoots.remove(finalEggShoot);
-                        i--;
-                    }
-                    if(finalEggShoot.getX() < 0 | finalEggShoot.getX()>2000 | finalEggShoot.getY()<0 | finalEggShoot.getY()>1100) {
-                        finalEggShoots.remove ( finalEggShoot );
-                        i--;
-                    }
+//                    if(Math.abs(finalEggShoot.getX()- (Rocket.LastXRocket+5))<5 & Math.abs(finalEggShoot.getY()- (Rocket.LastYRocket+5))<5){
+//                   //     Rocket.decreaseHart ( 1 );
+//                        finalEggShoots.remove(finalEggShoot);
+//                        i--;
+//                    }
+//                    if(finalEggShoot.getX() < 0 | finalEggShoot.getX()>2000 | finalEggShoot.getY()<0 | finalEggShoot.getY()>1100) {
+//                        finalEggShoots.remove ( finalEggShoot );
+//                        i--;
+//                    }
                 }
             }
         }

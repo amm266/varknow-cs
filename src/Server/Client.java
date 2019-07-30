@@ -5,10 +5,12 @@ import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.YaGsonBuilder;
 import game.MyConnection;
 import game.engine.Rocket;
+import game.engine.Tir;
 import game.swing.MainPanel;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Scanner;
@@ -17,26 +19,18 @@ public class Client implements Runnable {
 	private static ArrayList<Client> clients = new ArrayList<> ( );
 	private MyConnection myConnection;
 	private ServerGame game;
-	private static YaGson yaGson;
-	private static Scanner scanner;
-	private static Formatter formatter;
 	private Rocket rocket;
 	private MainPanel.STATE state;
-
-	static {
-		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ( );
-		yaGson = yaGsonBuilder.create ( );
-	}
-
+	private DataBase dataBase;
 	public Client ( Socket socket ) {
-
-		myConnection = new MyConnection ( socket );
 		try {
-			scanner = new Scanner ( socket.getInputStream ( ) );
-			formatter = new Formatter ( socket.getOutputStream ( ) );
-		} catch (IOException e) {
+			dataBase = new DataBase ();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace ( );
+		} catch (SQLException e) {
 			e.printStackTrace ( );
 		}
+		myConnection = new MyConnection ( socket );
 		clients.add ( this );
 		System.out.println ( "New Client Connected!!!" );
 	}
@@ -53,6 +47,7 @@ public class Client implements Runnable {
 				disconnect ( );
 				break;
 			}
+			game = new ServerGame ( 2000 , 1100 , this );
 			//get from client
 			Box box = ( Box ) myConnection.get ( );
 			int a = 1;
@@ -68,39 +63,55 @@ public class Client implements Runnable {
 						box.setStage ( game.stage );
 						break;
 					case fire:
+						game.chickens.clear ();
 						game.fire ( rocket );
 						break;
 					case setLocation:
 						rocket.setLocation ( box.getX ( ) , box.getY ( ) );
+						answer = null;
 						break;
 					case startNewGame:
-						game = new ServerGame ( 2000 , 1100 , this );
 						rocket = game.newRocket ( );
 						state = MainPanel.STATE.Game;
 						game.start ( );
-						answer = new Box ( );
-						( ( Box ) answer ).setState ( state );
+						answer = null;
 						break;
 					case saveGame:
 						try {
-							SaveSystem.save ( SaveSystem.SaveMode.game , game , "game1.save" );
+							dataBase.saveTirs ( ServerGame.getTirs (),1 );
+						} catch (SQLException e) {
+							e.printStackTrace ( );
+						}
+						try {
+							SaveSystem.save ( SaveSystem.SaveMode.game , game , "game1.json" ,rocket);
 						} catch (IOException e) {
 							e.printStackTrace ( );
 						}
 						break;
 					case loadGame:
+						//try {
+						//	finishGame ( );
+							//game = new ServerGame ( 2000 , 1100 , this );
+						//	GameForSave gameForSave = ( GameForSave ) SaveSystem.load ( SaveSystem.SaveMode.game ,
+								//	"game1.json" ,this);
+						//	if ( gameForSave == null ) {
+						//		System.out.println ( "fosh" );
+						//	} else {
+						//		game.loadGame ( gameForSave );
+							//	game.start ();
+						//	}
+					//	} catch (IOException e) {
+						//	e.printStackTrace ( );
+						//}
+						game.chickens.clear ();
+
+						ArrayList<Tir> tirs;
 						try {
-							finishGame ( );
-							game = new ServerGame ( 2000 , 1100 , this );
-							GameForSave gameForSave = ( GameForSave ) SaveSystem.load ( SaveSystem.SaveMode.game ,
-									"game1.save" ,this);
-							if ( gameForSave == null ) {
-								System.out.println ( "fosh" );
-							} else {
-								game.loadGame ( gameForSave );
-								game.start ();
-							}
-						} catch (IOException e) {
+							tirs =  dataBase.loadTirs ();
+							System.out.println (tirs );
+							System.out.println ("size"+tirs.size () );
+							ServerGame.setTirs ( tirs );
+						} catch (SQLException e) {
 							e.printStackTrace ( );
 						}
 						break;
@@ -108,7 +119,9 @@ public class Client implements Runnable {
 			}
 			System.out.println ( "end process" );
 			//send to client
-			myConnection.send ( answer );
+			if ( answer != null ) {
+				myConnection.send ( answer );
+			}
 		}
 	}
 

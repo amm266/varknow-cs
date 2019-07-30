@@ -37,7 +37,7 @@ public class MainPanel extends JPanel implements KeyListener {
 	public static int Temprature = 0;
 	public static long MainTime = System.currentTimeMillis ( );
 	private long TimeOfBombShoot = 0;
-	private static MyConnection myConnection;
+	private static volatile MyConnection myConnection;
 
 	@Override
 	public void keyTyped ( KeyEvent e ) {
@@ -73,7 +73,10 @@ public class MainPanel extends JPanel implements KeyListener {
 	public MainPanel ( String ip ) {
 		//jTextField0.addActionListener ( this );
 		myConnection = new MyConnection ( ip );
-		new MoveRocket ().start ();
+		Thread thread =
+		new MoveRocket ();
+		thread.setPriority ( 8);
+		thread.start ();
 		setBounds ( 0 , 0 , 2000 , 1100 );
 		game = new Game ( 2000 , 1100 );
 		if ( state == STATE.FIrstMenu ) {
@@ -90,7 +93,11 @@ public class MainPanel extends JPanel implements KeyListener {
 	protected void paintComponent ( Graphics g ) {
 		super.paintComponent ( g );
 		if ( state == STATE.Game ) {
-			game.paint ( ( Graphics2D ) g );
+			try {
+				game.paint ( ( Graphics2D ) g );
+			} catch (InterruptedException e) {
+				e.printStackTrace ( );
+			}
 		}
 		if ( state == STATE.FIrstMenu ) {
 			FirstMenu.paint ( ( Graphics2D ) g );
@@ -117,9 +124,6 @@ public class MainPanel extends JPanel implements KeyListener {
 			}
 			@Override
 			public void keyPressed ( KeyEvent e ) {
-				if ( e.getKeyCode ( ) == KeyEvent.KEY_PRESSED) {
-					System.out.println ( "save" );
-				}
 				System.out.println ( "pressed" );
 			}
 			@Override
@@ -161,10 +165,17 @@ public class MainPanel extends JPanel implements KeyListener {
 				if ( state == STATE.Game & ! statePauseMenu ) {
 					if ( ShootCounter % 2 == 0 ) {
 						myConnection.connection ( new Box ( Box.Ask.fire ) );
+						System.out.println ("fire" );
 						NumberOfShoot--;
 						TimeOfShoot = System.currentTimeMillis ( );
 						ShootCounter++;
 						Temprature += 5;
+						if ( e.getX ()>100&&e.getX ()<120&&e.getY ()>100&&e.getY ()<120 ){
+							save ();
+						}
+						if ( e.getX ()>600&&e.getX ()<620&&e.getY ()>600&&e.getY ()<620 ){
+							load ();
+						}
 					}
 					if ( ( System.currentTimeMillis ( ) - TimeOfShoot ) >= 100 && WaitForShoot ) {
 						ShootCounter++;
@@ -193,6 +204,7 @@ public class MainPanel extends JPanel implements KeyListener {
 						Game.NumberOfBomb--;
 						TimeOfBombShoot = System.currentTimeMillis ( );
 					}
+					//load ();
 				}
 			}
 			@Override
@@ -245,10 +257,12 @@ public class MainPanel extends JPanel implements KeyListener {
 		return answer;
 	}
 	public static void save(){
+		System.out.println ("save" );
 		Box box = new Box ( Box.Ask.saveGame );
 		myConnection.connection ( box );
 	}
 	public static void load(){
+		System.out.println ("load");
 		Box box = new Box ( Box.Ask.loadGame );
 		myConnection.connection ( box );
 	}
@@ -256,7 +270,7 @@ public class MainPanel extends JPanel implements KeyListener {
 class MoveRocket extends Thread{
 	private static int x;
 	private static int y;
-	private static int waitMilis = 50;
+	private static int waitMilis = 500;
 	public static void setLocation(int x,int y){
 		MoveRocket.x = x;
 		MoveRocket.y = y;

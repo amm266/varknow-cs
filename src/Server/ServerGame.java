@@ -27,9 +27,9 @@ public class ServerGame extends Thread {
 
 	private ArrayList<Client> clients = new ArrayList<Client> ( );
 
-	public volatile ArrayList<Rocket> rockets = new ArrayList<> ( );
+	public ArrayList<Rocket> rockets = new ArrayList<> ( );
 
-	private volatile ArrayList<Tir> tirs = new ArrayList<> ( );
+	private static volatile ArrayList<Tir> tirs = new ArrayList<> ( );
 
 	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
 
@@ -55,13 +55,15 @@ public class ServerGame extends Thread {
 	public void run () {
 		while ( true ) {
 			try {
-				sleep ( 100 );
+				sleep ( 300 );
 			} catch (InterruptedException e) {
 				e.printStackTrace ( );
 			}
 			this.chick ( );
 			this.move ( );
 			this.sendGameFields ( );
+			System.out.println ( "Tirs" + tirs.size ( ) );
+			System.out.println ( "chi" + chickens.size ( ) );
 		}
 	}
 
@@ -79,7 +81,7 @@ public class ServerGame extends Thread {
 		this.rockets.add ( gameForSave.rockets );
 	}
 
-	public GameForSave saveGame () {
+	public GameForSave saveGame (Rocket rocket) {
 		GameForSave gameForSave = new GameForSave ( );
 		gameForSave.width = this.width;
 		gameForSave.height = this.height;
@@ -91,13 +93,23 @@ public class ServerGame extends Thread {
 		gameForSave.chickens = this.chickens;
 		gameForSave.stronges = this.stronges;
 		gameForSave.eggs = this.eggs;
+		gameForSave.rockets = rocket;
 		return gameForSave;
+	}
+
+	public static ArrayList<Tir> getTirs () {
+		return tirs;
+	}
+
+	public static void setTirs ( ArrayList<Tir> tirs ) {
+		ServerGame.tirs = tirs;
 	}
 
 	public ServerGame ( int width , int height , Client client ) {
 		this.width = width;
 		this.height = height;
 		this.clients.add ( client );
+		chickens.clear ();
 	}
 
 	public Rocket newRocket () {
@@ -106,13 +118,7 @@ public class ServerGame extends Thread {
 		return rocket;
 	}
 
-	public GameFields sendGameFields () {
-		if ( chickens.size ( ) > 0 ) {
-			Gson yaGson = new Gson ( );
-			String c = yaGson.toJson ( chickens.get ( 0 ) );
-			String r = yaGson.toJson ( rockets.get ( 0 ) );
-			int o = 1;
-		}
+	private GameFields sendGameFields () {
 		ArrayList<ChickenForSend> chickenForSends = new ArrayList<> ( );
 		for ( Chicken chicken : chickens ) {
 			chickenForSends.add ( new ChickenForSend ( chicken ) );
@@ -128,7 +134,6 @@ public class ServerGame extends Thread {
 //		if ( Rocket.getHart ( ) <= 0 ) {
 //			System.out.println ( "loooooooooooose" );
 //		}
-		//moving the background
 		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
 			Egg egg = eggs.get ( k );
 			Rocket rocket = CheckQuancidence ( egg );
@@ -164,8 +169,6 @@ public class ServerGame extends Thread {
 					if ( Random ( 100 ) <= 6 ) {
 						Coin ( chicken.getX ( ) , chicken.getY ( ) );
 					}
-
-
 					chickens.remove ( chicken );
 					j--;
 					tirs.remove ( tir );
@@ -185,7 +188,6 @@ public class ServerGame extends Thread {
 				i--;
 				System.out.println ( "score:  " + rocket.getScore ( ) );
 			}
-
 		}
 		//System.out.println(Rocket.Score);
 
@@ -317,31 +319,33 @@ public class ServerGame extends Thread {
 	}
 
 	public void fire ( Rocket rocket ) {
-		if ( SecondMenu_Setting.typeOfShoot == false ) {
+		System.out.println ( "tirs" + tirs.size ( ) );
+		if ( ! SecondMenu_Setting.typeOfShoot ) {
 			// System.out.println("multi");
 		}
-		if ( SecondMenu_Setting.typeOfShoot == true ) {
-			synchronized (tirs) {
-				int r = 25;
-				int v = 5;
-				if ( Tir.StrongOfTir <= 1 ) {
-					double degree = ( 90 ) / 180.0 * Math.PI;
-					tirs.add ( new Tir ( rocket.getX ( ) ,
+		if ( SecondMenu_Setting.typeOfShoot ) {
+//			synchronized (tirs) {
+			int r = 25;
+			int v = 5;
+			if ( Tir.StrongOfTir <= 1 ) {
+				System.out.println ( "fire" );
+				double degree = ( 90 ) / 180.0 * Math.PI;
+				tirs.add ( new Tir ( rocket.getX ( ) ,
+						rocket.getY ( ) + - r * Math.sin ( degree ) ,
+						v * Math.cos ( degree ) ,
+						- v * Math.sin ( degree ) ) );
+			} else {
+				System.out.println ( "fire" );
+				for ( int i = 0 ; i < 5 ; i++ ) {
+					double degree = ( 70 + i * 10 ) / 180.0 * Math.PI;
+					tirs.add ( new Tir ( rocket.getX ( ) + r * Math.cos ( degree ) ,
 							rocket.getY ( ) + - r * Math.sin ( degree ) ,
-							v * Math.cos ( degree ) ,
-							- v * Math.sin ( degree ) ) );
-				} else {
-					for ( int i = 0 ; i < 5 ; i++ ) {
-						double degree = ( 70 + i * 10 ) / 180.0 * Math.PI;
-
-						tirs.add ( new Tir ( rocket.getX ( ) + r * Math.cos ( degree ) ,
-								rocket.getY ( ) + - r * Math.sin ( degree ) ,
-								5 * Math.cos ( degree ) ,
-								- 5 * Math.sin ( degree ) ) );
-					}
-					// System.out.println("single");
-
+							5 * Math.cos ( degree ) ,
+							- 5 * Math.sin ( degree ) ) );
 				}
+				// System.out.println("single");
+
+				//	}
 			}
 		}
 	}
@@ -445,7 +449,6 @@ public class ServerGame extends Thread {
 	public void Group1 () {
 
 		synchronized (chickens) {
-			//System.out.println(NumberOfChickensG1);
 			int r = 25;
 			for ( int i = 0 ; i < 40 ; i++ ) {
 				double degree = ( 90 ) / 180.0 * Math.PI;

@@ -27,6 +27,14 @@ public class Tir implements Animatable {
 		}
 	}
 
+	public double getVx () {
+		return vx;
+	}
+
+	public double getVy () {
+		return vy;
+	}
+
 	public Tir ( double x , double y , double vx , double vy ) {
 		this.x = x;
 		this.y = y;

@@ -19,7 +19,7 @@ public class Game {
 	private Rocket mainRocket;
 	public ArrayList<Rocket> rockets = new ArrayList<> ( );
 	private ArrayList<Tir> tirs = new ArrayList<> ( );
-	public static volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
+	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
 	private ArrayList<Egg> eggs = new ArrayList<> ( );
 	private final ArrayList<Coin> coins = new ArrayList<> ( );
 	private final ArrayList<Stronge> stronges = new ArrayList<> ( );
@@ -49,8 +49,8 @@ public class Game {
 	public static BufferedImage bufferedImage_SeconfMenu_Setting_COS2;
 	public static BufferedImage bufferedImage_Win;
 	//todo
-	private String HeartOfRocketStr = "" + mainRocket.getHart ( );
-	private String ScoreStr = "" + mainRocket.getScore ( );
+	private String HeartOfRocketStr = "";
+	private String ScoreStr = "" ;
 	public static int NumberOfBomb;
 	public static Point center = new Point ( 350 , 350 );
 
@@ -92,9 +92,12 @@ public class Game {
 		ImagesInit ( );
 	}
 
-	public void paint ( Graphics2D g2 ) {
+	public void paint ( Graphics2D g2 ) throws InterruptedException {
+		Thread.sleep ( 50 );
+		g2.setColor(new Color( 68 , 200 , 35 ));
+		g2.fillRect ( 100,100,20,20 );
 		long t = System.currentTimeMillis ( );
-		while ( System.currentTimeMillis ( ) - t < 1 ) ;
+		while ( System.currentTimeMillis ( ) - t < 10 ) ;
 		System.out.println ( "in Game" );
 		if ( level == LEVEL.Win ) {
 			try {
@@ -147,7 +150,9 @@ public class Game {
 			pauseMenu.paint ( g2 );
 		}
 		System.out.println ( stage );
-		System.out.println ( chickens.size ( ) );
+		synchronized (chickens) {
+			System.out.println ( chickens.size ( ) );
+		}
 	}
 
 	private void MoveBackground ( Graphics2D g2 ) {
@@ -211,6 +216,9 @@ public class Game {
 		g2.drawImage ( CoinBufferImage , 75 , 1000 , 15 , 15 , null );
 		g2.setColor ( new Color ( 0 , 200 , 200 ) );
 		g2.drawString ( ScoreStr , 50 , 1000 );
+		g2.fillRect ( 100,100,20,20 );
+		g2.setColor ( new Color ( 200 , 20 , 20 ) );
+		g2.fillRect ( 600,600,20,20 );
 	}
 
 	private void BombShooting ( Graphics2D g2 ) {
@@ -240,8 +248,8 @@ public class Game {
 	public void getGameFields ( GameFields box ) {
 		rockets = box.getRockets ( );
 		ArrayList<ChickenForSend> chickenForSends = box.getChickenForSends ( );
-		chickens = new ArrayList<> ( );
 		synchronized (chickens) {
+			chickens.clear ();
 			for ( ChickenForSend chickenForSend : chickenForSends ) {
 				chickens.add ( new Chicken ( chickenForSend ) );
 			}

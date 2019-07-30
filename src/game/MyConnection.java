@@ -18,8 +18,9 @@ public class MyConnection {
 		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ( );
 		yaGson = yaGsonBuilder.create ( );
 	}
-	private Get get;
-	private Send send;
+	Object lock = new Object ();
+	private volatile Get get;
+	private volatile Send send;
 	Socket socket;
 	Scanner scanner;
 	Formatter formatter;
@@ -37,8 +38,11 @@ public class MyConnection {
 		}
 		get = new Get ( this );
 		send = new Send ( this );
-		new Thread ( send ).start ();
-		new Thread ( get ).start ();
+		Thread thread = new Thread ( get );
+		Thread thread1 = new Thread ( send );
+	//	thread1.setPriority ( 10 );
+		thread.start ();
+		thread1.start ();
 		myConnections.add ( this );
 	}
 
@@ -65,14 +69,20 @@ public class MyConnection {
 	}
 	public BoxFather connection ( BoxFather box ) {
 		send ( box );
-		box = get ( );
+		//box = get ( );
 		return box;
 	}
 
 	public BoxFather get () {
 		//System.out.println ("get is started" );
-		while ( simple == null ) {
-
+		if ( simple == null ) {
+			synchronized (lock){
+				try {
+					lock.wait ();
+				} catch (InterruptedException e) {
+					e.printStackTrace ( );
+				}
+			}
 		}
 		BoxFather boxFather = simple;
 		simple = null;
@@ -83,6 +93,9 @@ public class MyConnection {
 
 	public void send ( BoxFather box ) {
 		send.addToQueue ( box );
+		synchronized (send.boxFathers) {
+			send.getBoxFathers ( ).notifyAll ( );
+		}
 		//System.out.println ("some box added to send queue!!!" );
 	}
 }
@@ -92,23 +105,31 @@ class Send implements Runnable {
 	Send ( MyConnection myConnection ){
 		this.myConnection = myConnection;
 	}
-	ArrayList<BoxFather> boxFathers = new ArrayList<BoxFather> ( );
+	volatile ArrayList<BoxFather> boxFathers = new ArrayList<BoxFather> ( );
 	@Override
 	public void run () {
 		while ( true ) {
-			try {
-				Thread.sleep ( 1 );
-			} catch (InterruptedException e) {
-				e.printStackTrace ( );
+		//	System.out.println ("numbers in queue"+boxFathers.size () );
+			if ( boxFathers.size ( ) == 0 ) {
+				try {
+					synchronized (boxFathers) {
+						boxFathers.wait ( );
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace ( );
+				}
 			}
-			if ( boxFathers.size ( ) > 0 ) {
 		//		System.out.println ("send    " );
 				send ( boxFathers.get ( 0 ), myConnection );
 				boxFathers.remove ( 0 );
-			}
 		}
 	}
-	void addToQueue(BoxFather boxFather){
+
+	public ArrayList<BoxFather> getBoxFathers () {
+		return boxFathers;
+	}
+
+	void addToQueue( BoxFather boxFather){
 		boxFathers.add ( boxFather );
 	}
 	private static void send ( BoxFather box, MyConnection myConnection ) {
@@ -116,8 +137,16 @@ class Send implements Runnable {
 		//System.out.println ("make simple null" );
 		String obj = MyConnection.yaGson.toJson ( box );
 		myConnection.formatter.format ( obj + "\n" );
-		if ( box.getBoxType () == BoxFather.BoxType.gameField )
-			System.out.println ("data"+obj.toCharArray ().length );
+		try {
+			synchronized (obj) {
+				if ( box.getBoxType ( ) == BoxFather.BoxType.gameField )
+					System.out.println ( "data" + obj.toCharArray ( ).length );
+			}
+		}
+		catch (Exception e){
+			//e.printStackTrace ();
+		}
+		System.out.println ("sended" );
 		myConnection.formatter.flush ( );
 		//System.out.println ("send Box :" + box.getBoxType () );
 	}
@@ -130,11 +159,6 @@ class Get implements Runnable {
 	}
 	@Override
 	public void run () {
-		try {
-			Thread.sleep ( 1 );
-		} catch (InterruptedException e) {
-			e.printStackTrace ( );
-		}
 		while ( true ) {
 			String get = "";
 			while ( true ) {
@@ -144,14 +168,24 @@ class Get implements Runnable {
 				}
 			}
 			myConnection.tmp = MyConnection.yaGson.fromJson ( get , BoxFather.class );
-			switch ( myConnection.tmp.getBoxType ( ) ) {
-				case gameField:
-					MainPanel.setGameField ( ( GameFields ) myConnection.tmp );
-					myConnection.tmp = null;
-					break;
-				case simple:
-					myConnection.simple = myConnection.tmp;
-					break;
+			try {
+				switch ( myConnection.tmp.getBoxType ( ) ) {
+					case gameField:
+						MainPanel.setGameField ( ( GameFields ) myConnection.tmp );
+						System.out.println ( "get fields" );
+						myConnection.tmp = null;
+						break;
+					case simple:
+						myConnection.simple = myConnection.tmp;
+						synchronized (myConnection.lock){
+							myConnection.lock.notifyAll ();
+						}
+						break;
+				}
+			}
+			catch (Exception e){
+			//	e.printStackTrace ();
+				System.out.println ( "npe");
 			}
 		}
 	}
