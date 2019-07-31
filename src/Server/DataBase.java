@@ -13,7 +13,7 @@ public class DataBase {
 	private Statement statement;
 	private ResultSet resultSet;
 	public DataBase() throws ClassNotFoundException, SQLException {
-		Class.forName ( "com.mysql.jdbc.Driver" );
+		Class.forName ( "com.mysql.cj.jdbc.Driver" );
 		connection = DriverManager.getConnection (url,name,pass );
 		statement = connection.createStatement ();
 	}
@@ -44,6 +44,12 @@ public class DataBase {
 		}
 		return tirs;
 	}
+	public void updateAccount(Account account,String newPass) throws SQLException {
+		String exe = "update accounts\n" +
+				"SET password = '"+newPass+"'\n" +
+				"WHERE username = '"+account.getUserName ()+"'";
+		executeForInsert ( exe );
+	}
 	private String createTir(Tir tir,int id){
 		String out = "(" +id+","+tir.getX ()+","+tir.getY ()+","+tir.getVx ()+","+tir.getVy ()+")";
 		return out;
@@ -66,6 +72,10 @@ public class DataBase {
 			accounts.add ( account );
 		}
 		return accounts;
+	}
+	public void delAccount(Account account) throws SQLException {
+		String exe = "DELETE FROM accounts WHERE username = '"+account.getUserName ()+"';";
+		executeForInsert ( exe );
 	}
 	private String createAccount(Account account){
 		String out = "('" +account.getUserName ()+"','"+account.getPassword ()+"',"+account.getScore ()+")";

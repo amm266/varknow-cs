@@ -22,8 +22,8 @@ public class MainPanel extends JPanel implements KeyListener {
 	private boolean GameState = false;
 	private boolean MenuState = false;
 	private static Game game;
-	SecondMenu SecondMenu = new SecondMenu ( );
-	FirstMenu FirstMenu = new FirstMenu ( );
+	private SecondMenu SecondMenu = new SecondMenu ( );
+	private FirstMenu FirstMenu = new FirstMenu ( );
 	public static int x;
 	public static int y;
 	public static long TimeOfShoot;
@@ -65,11 +65,13 @@ public class MainPanel extends JPanel implements KeyListener {
 	}
 
 	private static STATE state = STATE.FIrstMenu;
-
 	public static STATE getState () {
 		return state;
 	}
-
+	public void finalize()
+	{
+		close ();
+	}
 	public MainPanel ( String ip ) {
 		//jTextField0.addActionListener ( this );
 		myConnection = new MyConnection ( ip );
@@ -199,7 +201,7 @@ public class MainPanel extends JPanel implements KeyListener {
 						}
 						if ( Game.stage == Game.STAGE.FIRST ) {
 							System.out.println ( "bomb exploded" );
-							Game.chickens.clear ( );
+							//Game.chickens.clear ( );
 						}
 						Game.NumberOfBomb--;
 						TimeOfBombShoot = System.currentTimeMillis ( );
@@ -274,6 +276,16 @@ public class MainPanel extends JPanel implements KeyListener {
 		Box box = new Box ( Box.Ask.login,true );
 		askForAccount ( user1 , pass1,  box );
 	}
+	public static void updateAccount(){
+		String user1 = jTextField0.getText ();
+		String pass1 = jTextField1.getText ();
+		String newPass = jTextField2.getText ();
+		Box box = new Box ( Box.Ask.updateAccount,false );
+		box.setUserName ( user1 );
+		box.setPass ( pass1 );
+		box.setNewPass ( newPass );
+		myConnection.connection ( box );
+	}
 
 	private static void askForAccount ( String user , String pass , Box box ) {
 		box.setUserName ( user );
@@ -283,11 +295,19 @@ public class MainPanel extends JPanel implements KeyListener {
 			state = STATE.SEcondMenu;
 		}
 	}
-
+	public static void close(){
+		myConnection.close ();
+	}
 	public static void createAccount(){
 		String user1 = jTextField0.getText ();
 		String pass1 = jTextField1.getText ();
 		Box box = new Box ( Box.Ask.createAccount,true );
+		askForAccount ( user1 , pass1,  box );
+	}
+	public static void deleteAccount(){
+		String user1 = jTextField0.getText ();
+		String pass1 = jTextField1.getText ();
+		Box box = new Box ( Box.Ask.deleteAccount,true );
 		askForAccount ( user1 , pass1,  box );
 	}
 }

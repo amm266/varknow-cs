@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Random;
 
 public class ServerGame extends Thread {
+	private static ServerGame mainGame;
 	public static int NumberOfChickensG1 = 40;
 	public static int NumberOfChickensG2 = 50;
 	public static int NumberOfChickensG3 = 60;
@@ -37,7 +38,7 @@ public class ServerGame extends Thread {
 
 	private final ArrayList<Coin> coins = new ArrayList<> ( );
 
-	private ArrayList<Stronge> stronges = new ArrayList<> ( );
+	private volatile ArrayList<Stronge> stronges = new ArrayList<> ( );
 
 	public int G1Transform = 0;
 
@@ -62,6 +63,7 @@ public class ServerGame extends Thread {
 			this.chick ( );
 			this.move ( );
 			this.sendGameFields ( );
+			this.paint ();
 			System.out.println ( "Tirs" + tirs.size ( ) );
 			System.out.println ( "chi" + chickens.size ( ) );
 		}
@@ -101,6 +103,14 @@ public class ServerGame extends Thread {
 		return tirs;
 	}
 
+	public static void setMainGame ( ServerGame mainGame ) {
+		ServerGame.mainGame = mainGame;
+	}
+
+	public static ServerGame getMainGame () {
+		return mainGame;
+	}
+
 	public static void setTirs ( ArrayList<Tir> tirs ) {
 		ServerGame.tirs = tirs;
 	}
@@ -110,6 +120,10 @@ public class ServerGame extends Thread {
 		this.height = height;
 		this.clients.add ( client );
 		chickens.clear ();
+	}
+
+	public ArrayList<Client> getClients () {
+		return clients;
 	}
 
 	public Rocket newRocket () {
@@ -123,7 +137,7 @@ public class ServerGame extends Thread {
 		for ( Chicken chicken : chickens ) {
 			chickenForSends.add ( new ChickenForSend ( chicken ) );
 		}
-		GameFields gameFields = new GameFields ( chickenForSends , tirs , eggs , rockets );
+		GameFields gameFields = new GameFields ( chickenForSends , tirs , eggs , rockets,stronges,coins );
 		for ( Client client : clients ) {
 			client.getMyConnection ( ).send ( gameFields );
 		}
@@ -131,9 +145,11 @@ public class ServerGame extends Thread {
 	}
 
 	public void paint () {
-//		if ( Rocket.getHart ( ) <= 0 ) {
-//			System.out.println ( "loooooooooooose" );
-//		}
+		for ( Rocket rocket :rockets ) {
+			if ( rocket.getHart ( ) <= 0 ) {
+				System.out.println ( "loooooooooooose" );
+			}
+		}
 		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
 			Egg egg = eggs.get ( k );
 			Rocket rocket = CheckQuancidence ( egg );
@@ -155,20 +171,21 @@ public class ServerGame extends Thread {
 				tirs.remove ( tir );
 				i--;
 			}
-			if ( CheckQuancidence ( tir ) & stage == game.engine.Game.STAGE.FINAL ) {
+			if ( CheckQuancidence ( tir ) && stage == game.engine.Game.STAGE.FINAL ) {
 				finalEgg.AmountOfLife--;
 				tirs.remove ( tir );
 			}
 			for ( int j = 0 ; j < chickens.size ( ) ; j++ ) {
 				Chicken chicken = chickens.get ( j );
 				if ( CheckQuancidence ( chicken , tir ) ) {
-					if ( Random ( 100 ) <= 6 ) {
+					//todo
+					//if ( Random ( 6 ) <= 6 ) {
 
 						Strong ( chicken.getX ( ) , chicken.getY ( ) );
-					}
-					if ( Random ( 100 ) <= 6 ) {
+					//}
+					//if ( Random ( 6 ) <= 6 ) {
 						Coin ( chicken.getX ( ) , chicken.getY ( ) );
-					}
+					//}
 					chickens.remove ( chicken );
 					j--;
 					tirs.remove ( tir );
@@ -190,7 +207,6 @@ public class ServerGame extends Thread {
 			}
 		}
 		//System.out.println(Rocket.Score);
-
 		for ( int i = 0 ; i < stronges.size ( ) ; i++ ) {
 			Stronge stronge = stronges.get ( i );
 			if ( stronge.getY ( ) > 1100 ) {
@@ -205,7 +221,7 @@ public class ServerGame extends Thread {
 				i--;
 			}
 		}
-		if ( ( System.currentTimeMillis ( ) - EggTime ) >= 1000 ) {
+		if ( ( System.currentTimeMillis ( ) - EggTime ) >= 6000 ) {
 			for ( Chicken chicken : chickens ) {
 				if ( Random ( 50 ) <= 5 ) {
 					Egg ( 1 , chicken.getX ( ) , chicken.getY ( ) );
@@ -427,6 +443,7 @@ public class ServerGame extends Thread {
 		synchronized (stronges) {
 			stronges.add ( new Stronge ( StrongX , StrongY ) );
 		}
+		int a=1;
 	}
 
 	public void Coin ( double CoinX , double CoinY ) {
@@ -559,7 +576,7 @@ public class ServerGame extends Thread {
 
 	public Rocket CheckQuancidence ( double y , double x ) {
 		for ( Rocket rocket : rockets ) {
-			if ( y >= rocket.LastYRocket - 20 & y <= rocket.LastYRocket + 20 && x >= rocket.LastXRocket - 20 & x <= rocket.LastXRocket + 20 ) {
+			if ( y >= rocket.getY () - 20 & y <= rocket.getY () + 20 && x >= rocket.getX () - 20 & x <= rocket.getX () + 20 ) {
 				return rocket;
 			}
 		}

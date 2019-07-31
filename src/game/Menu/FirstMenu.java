@@ -69,7 +69,7 @@ public class FirstMenu extends JPanel implements Animatable,KeyListener {
         if ((x > 430 & x < 530) & (y < 640 & y > 600)) {
             //DELETE
             DELETE = true;
-
+            MainPanel.deleteAccount ();
         }
 
         if ((x > 700 & x < 800) & (y < 640 & y > 600)) {
@@ -82,6 +82,9 @@ public class FirstMenu extends JPanel implements Animatable,KeyListener {
                 jTextFieldOutput.setText(NameOfPlayer);
             }
             }
+        if ((x > 800 && x < 900) && (y < 640 && y > 600)){
+            MainPanel.updateAccount ();
+        }
     }
 
 
@@ -105,6 +108,7 @@ public class FirstMenu extends JPanel implements Animatable,KeyListener {
         g2.fillRect(170,600,100,40);
         g2.fillRect(430,600,100,40);
         g2.fillRect(700,600,100,40);
+        g2.fillRect(800,600,100,40);
         g2.setFont(new Font("Arial" , 250 , 30));
         g2.setColor(new Color(0,0,0));
         g2.drawString("Enter",180,630);

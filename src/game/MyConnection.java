@@ -2,6 +2,7 @@ package game;
 
 import Box.BoxFather;
 import Box.GameFields;
+import Server.Client;
 import com.gilecode.yagson.YaGson;
 import com.gilecode.yagson.YaGsonBuilder;
 import game.swing.MainPanel;
@@ -12,13 +13,16 @@ import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Scanner;
 
-public class MyConnection {
+public class MyConnection implements Runnable {
+	private Client client;
 	static YaGson yaGson;
+
 	static {
 		YaGsonBuilder yaGsonBuilder = new YaGsonBuilder ( );
 		yaGson = yaGsonBuilder.create ( );
 	}
-	Object lock = new Object ();
+
+	Object lock = new Object ( );
 	private volatile Get get;
 	private volatile Send send;
 	Socket socket;
@@ -26,7 +30,8 @@ public class MyConnection {
 	Formatter formatter;
 	volatile BoxFather tmp;
 	volatile BoxFather simple;
-	private static ArrayList<MyConnection> myConnections =new ArrayList<> (  );
+	private static ArrayList<MyConnection> myConnections = new ArrayList<> ( );
+
 	public MyConnection ( String ip ) {
 		try {
 			socket = new Socket ( ip , 8888 );
@@ -40,36 +45,41 @@ public class MyConnection {
 		send = new Send ( this );
 		Thread thread = new Thread ( get );
 		Thread thread1 = new Thread ( send );
-	//	thread1.setPriority ( 10 );
-		thread.start ();
-		thread1.start ();
+		//	thread1.setPriority ( 10 );
+		thread.start ( );
+		thread1.start ( );
 		myConnections.add ( this );
 	}
 
-	public MyConnection ( Socket socket ) {
+	public MyConnection ( Socket socket , Client client ) {
 		try {
 			scanner = new Scanner ( socket.getInputStream ( ) );
 			formatter = new Formatter ( socket.getOutputStream ( ) );
 		} catch (IOException e) {
 			e.printStackTrace ( );
 		}
+		this.client = client;
+		this.socket = socket;
 		get = new Get ( this );
 		send = new Send ( this );
-		new Thread ( send ).start ();
-		new Thread ( get ).start ();
+		new Thread ( send ).start ( );
+		new Thread ( get ).start ( );
 		myConnections.add ( this );
 	}
-	public void disconnect(){
+
+	public void disconnect () {
 
 	}
-	public boolean isConnect(){
+
+	public boolean isConnect () {
 		if ( socket == null )
 			return true;
-		return socket.isConnected ();
+		return socket.isConnected ( );
 	}
+
 	public BoxFather connection ( BoxFather box ) {
 		send ( box );
-		if ( box.getexeptAnAnswer () )
+		if ( box.getexeptAnAnswer ( ) )
 			box = get ( );
 		return box;
 	}
@@ -77,9 +87,9 @@ public class MyConnection {
 	public BoxFather get () {
 		//System.out.println ("get is started" );
 		if ( simple == null ) {
-			synchronized (lock){
+			synchronized (lock) {
 				try {
-					lock.wait ();
+					lock.wait ( );
 				} catch (InterruptedException e) {
 					e.printStackTrace ( );
 				}
@@ -99,18 +109,45 @@ public class MyConnection {
 		}
 		//System.out.println ("some box added to send queue!!!" );
 	}
+
+	@Override
+	public void run () {
+		while ( true ) {
+			try {
+				Thread.sleep ( 3000 );
+				if ( ! isConnect ( ) ) {
+					client.disconnect ( );
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace ( );
+			}
+		}
+	}
+
+	public void close () {
+		try {
+			socket.close ( );
+		} catch (IOException e) {
+			e.printStackTrace ( );
+		}
+		scanner.close ( );
+		formatter.close ( );
+	}
 }
 
 class Send implements Runnable {
 	private MyConnection myConnection;
-	Send ( MyConnection myConnection ){
+
+	Send ( MyConnection myConnection ) {
 		this.myConnection = myConnection;
 	}
+
 	volatile ArrayList<BoxFather> boxFathers = new ArrayList<BoxFather> ( );
+
 	@Override
 	public void run () {
 		while ( true ) {
-		//	System.out.println ("numbers in queue"+boxFathers.size () );
+			//	System.out.println ("numbers in queue"+boxFathers.size () );
 			if ( boxFathers.size ( ) == 0 ) {
 				try {
 					synchronized (boxFathers) {
@@ -120,9 +157,9 @@ class Send implements Runnable {
 					e.printStackTrace ( );
 				}
 			}
-		//		System.out.println ("send    " );
-				send ( boxFathers.get ( 0 ), myConnection );
-				boxFathers.remove ( 0 );
+			//		System.out.println ("send    " );
+			send ( boxFathers.get ( 0 ) , myConnection );
+			boxFathers.remove ( 0 );
 		}
 	}
 
@@ -130,10 +167,11 @@ class Send implements Runnable {
 		return boxFathers;
 	}
 
-	void addToQueue( BoxFather boxFather){
+	void addToQueue ( BoxFather boxFather ) {
 		boxFathers.add ( boxFather );
 	}
-	private static void send ( BoxFather box, MyConnection myConnection ) {
+
+	private static void send ( BoxFather box , MyConnection myConnection ) {
 		myConnection.simple = null;
 		//System.out.println ("make simple null" );
 		String obj = MyConnection.yaGson.toJson ( box );
@@ -143,11 +181,10 @@ class Send implements Runnable {
 				if ( box.getBoxType ( ) == BoxFather.BoxType.gameField )
 					System.out.println ( "data" + obj.toCharArray ( ).length );
 			}
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			//e.printStackTrace ();
 		}
-		System.out.println ("sended" );
+		System.out.println ( "sended" );
 		myConnection.formatter.flush ( );
 		//System.out.println ("send Box :" + box.getBoxType () );
 	}
@@ -155,9 +192,11 @@ class Send implements Runnable {
 
 class Get implements Runnable {
 	private MyConnection myConnection;
-	Get ( MyConnection myConnection ){
+
+	Get ( MyConnection myConnection ) {
 		this.myConnection = myConnection;
 	}
+
 	@Override
 	public void run () {
 		while ( true ) {
@@ -178,15 +217,14 @@ class Get implements Runnable {
 						break;
 					case simple:
 						myConnection.simple = myConnection.tmp;
-						synchronized (myConnection.lock){
-							myConnection.lock.notifyAll ();
+						synchronized (myConnection.lock) {
+							myConnection.lock.notifyAll ( );
 						}
 						break;
 				}
-			}
-			catch (Exception e){
-			//	e.printStackTrace ();
-				System.out.println ( "npe");
+			} catch (Exception e) {
+				//	e.printStackTrace ();
+				System.out.println ( "npe" );
 			}
 		}
 	}

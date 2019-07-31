@@ -18,11 +18,11 @@ public class Game {
 	//forBox
 	private Rocket mainRocket;
 	public ArrayList<Rocket> rockets = new ArrayList<> ( );
-	private ArrayList<Tir> tirs = new ArrayList<> ( );
-	public static final ArrayList<Chicken> chickens = new ArrayList<> ( );
+	private volatile ArrayList<Tir> tirs = new ArrayList<> ( );
+	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
 	private ArrayList<Egg> eggs = new ArrayList<> ( );
-	private final ArrayList<Coin> coins = new ArrayList<> ( );
-	private final ArrayList<Stronge> stronges = new ArrayList<> ( );
+	private ArrayList<Coin> coins = new ArrayList<> ( );
+	private ArrayList<Stronge> stronges = new ArrayList<> ( );
 	//local
 	private int LastXBomb;
 	private int LastYBomb;
@@ -256,6 +256,8 @@ public class Game {
 		}
 		tirs = box.getTirs ( );
 		eggs = box.getEggs ( );
+		stronges = box.getStronges ();
+		coins = box.getCoins ();
 	}
 
 	private void drawTir ( Tir tir , Graphics2D g2 ) {

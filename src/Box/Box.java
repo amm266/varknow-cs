@@ -17,10 +17,12 @@ public class Box extends BoxFather {
 		saveGame,
 		loadGame,
 		createAccount,
-		login
+		login,
+		deleteAccount,
+		updateAccount
 	}
-	public Box( Ask ask,boolean exept){
-		super(BoxType.simple,exept);
+	public Box( Ask ask,boolean exeptAnAnswer){
+		super(BoxType.simple,exeptAnAnswer);
 		this.ask = ask;
 	}
 	public Box(boolean exept){
@@ -33,11 +35,20 @@ public class Box extends BoxFather {
 	private int y;
 	private String userName;
 	private String pass;
+	private String newPass;
 	private boolean succes;
 	private ArrayList<Chicken> chickens;
 	private ArrayList<Tir> tirs;
 	private ArrayList<Egg> eggs;
 	private ArrayList<Rocket> rockets;
+
+	public String getNewPass () {
+		return newPass;
+	}
+
+	public void setNewPass ( String newPass ) {
+		this.newPass = newPass;
+	}
 
 	public String getPass () {
 		return pass;

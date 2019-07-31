@@ -10,25 +10,41 @@ public class GameFields extends BoxFather {
 	private ArrayList<Tir> tirs;
 	private ArrayList<Egg> eggs;
 	private ArrayList<Rocket> rockets;
-	public  GameFields(ArrayList<ChickenForSend> chickens,
-							  ArrayList<Tir> tirs,
-							  ArrayList<Egg> eggs,
-							  ArrayList<Rocket> rockets
-	){
-		super(BoxType.gameField,false);
+	private ArrayList<Stronge> stronges;
+	private ArrayList<Coin> coins;
+
+	public GameFields ( ArrayList<ChickenForSend> chickens ,
+						ArrayList<Tir> tirs ,
+						ArrayList<Egg> eggs ,
+						ArrayList<Rocket> rockets ,
+						ArrayList<Stronge> stronges ,
+						ArrayList<Coin> coins
+	) {
+		super ( BoxType.gameField , false );
 		this.chickenForSends = chickens;
 		this.tirs = tirs;
 		this.eggs = eggs;
 		this.rockets = rockets;
+		this.coins = coins;
+		this.stronges = stronges;
 	}
 
 	public ArrayList<ChickenForSend> getChickenForSends () {
 		return chickenForSends;
 	}
 
-	public GameFields(){
-		super(BoxType.gameField,false);
+	public ArrayList<Coin> getCoins () {
+		return coins;
 	}
+
+	public ArrayList<Stronge> getStronges () {
+		return stronges;
+	}
+
+	public GameFields () {
+		super ( BoxType.gameField , false );
+	}
+
 	public void setChickens ( ArrayList<Chicken> chickens ) {
 		this.chickens = chickens;
 	}

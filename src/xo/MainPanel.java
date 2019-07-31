@@ -2,8 +2,10 @@ package xo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
-public class MainPanel extends JPanel {
+public class MainPanel extends JPanel implements KeyListener {
     private String currentTurn = "X";
     private GameButton[][] buttons = new GameButton[3][3];
 
@@ -88,5 +90,20 @@ public class MainPanel extends JPanel {
         currentTurn = nextTurn;
 
         return temp;
+    }
+
+    @Override
+    public void keyTyped ( KeyEvent e ) {
+
+    }
+
+    @Override
+    public void keyPressed ( KeyEvent e ) {
+        System.out.println ("pressed" );
+    }
+
+    @Override
+    public void keyReleased ( KeyEvent e ) {
+
     }
 }
