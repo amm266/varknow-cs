@@ -20,17 +20,7 @@ public class PaintLoop extends Thread implements KeyListener {
         while (true) {
             //FirstTime= System.currentTimeMillis();
             running =mainPanel.state();
-               if ( running & ! MainPanel.statePauseMenu ) {
-                 //  mainPanel.moveGame();
-               }
                 mainPanel.repaint();
-            //LastTime=System.currentTimeMillis();
-            try {
-                long X = (LastTime - FirstTime) + 10;
-                Thread.sleep(X);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
     @Override

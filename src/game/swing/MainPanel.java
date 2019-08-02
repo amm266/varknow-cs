@@ -88,8 +88,8 @@ public class MainPanel extends JPanel implements KeyListener {
 			Jtextfieldinit ( jTextField3 , 250 , 490 , 480 , 40 , this );
 		}
 	}
-	public static void setGameField(GameFields gameFields){
-		game.getGameFields ( gameFields );
+	public static GameFields getGameFields(){
+		return myConnection.getGameFields ();
 	}
 	@Override
 	protected void paintComponent ( Graphics g ) {
@@ -194,7 +194,7 @@ public class MainPanel extends JPanel implements KeyListener {
 							Game.stage = Game.STAGE.FINAL;
 						}
 						if ( Game.stage == Game.STAGE.FINAL ) {
-							FinalEgg.AmountOfLife -= 50;
+							//FinalEgg.AmountOfLife -= 50;
 						}
 						if ( Game.stage == Game.STAGE.SECOND ) {
 							Game.stage = Game.STAGE.THIRD;
@@ -314,7 +314,7 @@ public class MainPanel extends JPanel implements KeyListener {
 class MoveRocket extends Thread{
 	private static int x;
 	private static int y;
-	private static int waitMilis = 500;
+	private static int waitMilis = 15;
 	public static void setLocation(int x,int y){
 		MoveRocket.x = x;
 		MoveRocket.y = y;

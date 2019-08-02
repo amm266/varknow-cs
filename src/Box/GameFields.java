@@ -5,6 +5,13 @@ import game.engine.*;
 import java.util.ArrayList;
 
 public class GameFields extends BoxFather {
+	public enum GameState {
+		inGame,
+		louse,
+		win
+	}
+
+	private GameState gameState;
 	private ArrayList<ChickenForSend> chickenForSends;
 	private ArrayList<Chicken> chickens;
 	private ArrayList<Tir> tirs;
@@ -12,8 +19,10 @@ public class GameFields extends BoxFather {
 	private ArrayList<Rocket> rockets;
 	private ArrayList<Stronge> stronges;
 	private ArrayList<Coin> coins;
-
-	public GameFields ( ArrayList<ChickenForSend> chickens ,
+	private FinalEgg finalEgg;
+	public GameFields ( GameState gameState,
+			FinalEgg finalEgg
+			, ArrayList<ChickenForSend> chickens ,
 						ArrayList<Tir> tirs ,
 						ArrayList<Egg> eggs ,
 						ArrayList<Rocket> rockets ,
@@ -21,12 +30,26 @@ public class GameFields extends BoxFather {
 						ArrayList<Coin> coins
 	) {
 		super ( BoxType.gameField , false );
+		this.gameState = gameState;
 		this.chickenForSends = chickens;
 		this.tirs = tirs;
 		this.eggs = eggs;
 		this.rockets = rockets;
 		this.coins = coins;
 		this.stronges = stronges;
+		this.finalEgg = finalEgg;
+	}
+
+	public FinalEgg getFinalEgg () {
+		return finalEgg;
+	}
+
+	public GameState getGameState () {
+		return gameState;
+	}
+
+	public void setGameState ( GameState gameState ) {
+		this.gameState = gameState;
 	}
 
 	public ArrayList<ChickenForSend> getChickenForSends () {

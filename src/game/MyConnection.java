@@ -30,6 +30,7 @@ public class MyConnection implements Runnable {
 	Formatter formatter;
 	volatile BoxFather tmp;
 	volatile BoxFather simple;
+	volatile GameFields gameFields = new GameFields (  );
 	private static ArrayList<MyConnection> myConnections = new ArrayList<> ( );
 
 	public MyConnection ( String ip ) {
@@ -133,6 +134,12 @@ public class MyConnection implements Runnable {
 		scanner.close ( );
 		formatter.close ( );
 	}
+
+	public GameFields getGameFields () {
+		synchronized (gameFields) {
+			return gameFields;
+		}
+	}
 }
 
 class Send implements Runnable {
@@ -174,12 +181,20 @@ class Send implements Runnable {
 	private static void send ( BoxFather box , MyConnection myConnection ) {
 		myConnection.simple = null;
 		//System.out.println ("make simple null" );
-		String obj = MyConnection.yaGson.toJson ( box );
+		String obj = "";
+		try{
+			obj = MyConnection.yaGson.toJson ( box );
+		}
+		catch (Exception e){
+			e.printStackTrace ();
+		}
 		myConnection.formatter.format ( obj + "\n" );
 		try {
 			synchronized (obj) {
-				if ( box.getBoxType ( ) == BoxFather.BoxType.gameField )
-					System.out.println ( "data" + obj.toCharArray ( ).length );
+				if ( box.getBoxType ( ) == BoxFather.BoxType.gameField ) {
+//					System.out.println ( "data" + obj.toCharArray ( ).length );
+					System.out.println ("ping"+ System.currentTimeMillis () );
+				}
 			}
 		} catch (Exception e) {
 			//e.printStackTrace ();
@@ -211,7 +226,11 @@ class Get implements Runnable {
 			try {
 				switch ( myConnection.tmp.getBoxType ( ) ) {
 					case gameField:
-						MainPanel.setGameField ( ( GameFields ) myConnection.tmp );
+						//MainPanel.setGameField ( ( GameFields ) myConnection.tmp );
+						//System.out.println ("ping"+ System.currentTimeMillis () );
+						synchronized (myConnection.gameFields) {
+							myConnection.gameFields = ( GameFields ) myConnection.tmp;
+						}
 						System.out.println ( "get fields" );
 						myConnection.tmp = null;
 						break;

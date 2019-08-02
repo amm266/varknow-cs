@@ -20,6 +20,7 @@ public class Client implements Runnable {
 	private Rocket rocket;
 	private MainPanel.STATE state;
 	private DataBase dataBase;
+	private volatile GameFields.GameState gameState;
 
 	public Client ( Socket socket ) {
 		try {
@@ -27,8 +28,8 @@ public class Client implements Runnable {
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace ( );
 		}
-		myConnection = new MyConnection ( socket,this );
-		new Thread ( myConnection ).start ();
+		myConnection = new MyConnection ( socket , this );
+		new Thread ( myConnection ).start ( );
 		clients.add ( this );
 		System.out.println ( "New Client Connected!!!" );
 	}
@@ -51,49 +52,54 @@ public class Client implements Runnable {
 			int a = 1;
 			//process
 			System.out.println ( "start process" );
-			Box answer = new Box ( false);
+			Box answer = new Box ( false );
 			if ( box == null ) {
 				int w = 1;
 			}
-			if ( box.getAsk ( ) != null ) {
-				switch ( box.getAsk ( ) ) {
-					case createAccount:
-						createAccount ( box , answer );
-						break;
-					case login:
-						account = Account.login ( box.getUserName (),box.getPass () );
-						if ( account == null ) {
-							answer.setSucces ( false );
-						} else {
-							answer.setSucces ( true );
-						}
-						break;
-					case updateAccount:
-						Account.updateAccount ( box.getUserName (),box.getPass (),box.getNewPass () );
-						break;
-					case deleteAccount:
-						Account.deleteAccount ( box.getUserName (),box.getPass () );
-					case state:
-						box.setStage ( game.stage );
-						break;
-					case fire:
-						game.chickens.clear ( );
-						game.fire ( rocket );
-						break;
-					case setLocation:
-						rocket.setLocation ( box.getX ( ) , box.getY ( ) );
-						answer = null;
-						break;
-					case startNewGame:
-						newGame ( answer );
-						break;
-					case saveGame:
-						save ( );
-						break;
-					case loadGame:
-						load ( );
-						break;
-				}
+			Box.Ask ask = Box.Ask.chick;
+			try {
+				ask = box.getAsk ( );
+			} catch (Exception e) {
+				e.printStackTrace ( );
+			}
+			switch ( ask ) {
+				case createAccount:
+					createAccount ( box , answer );
+					break;
+				case login:
+					account = Account.login ( box.getUserName ( ) , box.getPass ( ) );
+					if ( account == null ) {
+						answer.setSucces ( false );
+					} else {
+						answer.setSucces ( true );
+					}
+					break;
+				case updateAccount:
+					Account.updateAccount ( box.getUserName ( ) , box.getPass ( ) , box.getNewPass ( ) );
+					break;
+				case deleteAccount:
+					Account.deleteAccount ( box.getUserName ( ) , box.getPass ( ) );
+				case state:
+					box.setStage ( game.stage );
+					break;
+				case fire:
+					game.fire ( rocket );
+					break;
+				case setLocation:
+					rocket.setLocation ( box.getX ( ) , box.getY ( ) );
+					answer = null;
+					break;
+				case startNewGame:
+					newGame ( answer );
+					break;
+				case saveGame:
+					save ( );
+					break;
+				case loadGame:
+					load ( );
+					break;
+				case chick:
+					break;
 			}
 			System.out.println ( "end process" );
 			//send to client
@@ -103,9 +109,17 @@ public class Client implements Runnable {
 		}
 	}
 
+	public void setGameState ( GameFields.GameState gameState ) {
+		this.gameState = gameState;
+	}
+
+	public GameFields.GameState getGameState () {
+		return gameState;
+	}
+
 	private void createAccount ( Box box , Box answer ) {
 		try {
-			account = Account.newAccount ( box.getUserName ( ) , box.getPass ( ),0 ,false);
+			account = Account.newAccount ( box.getUserName ( ) , box.getPass ( ) , 0 , false );
 		} catch (SQLException e) {
 			e.printStackTrace ( );
 		}
@@ -118,13 +132,15 @@ public class Client implements Runnable {
 	}
 
 	private void newGame ( Box answer ) {
-		if ( ServerGame.getMainGame () == null ) {
+		if ( ServerGame.getMainGame ( ) == null ) {
 			ServerGame.setMainGame ( game );
 			game.start ( );
-		}
-		else {
-			this.game = ServerGame.getMainGame ();
-			game.getClients ().add ( this );
+		} else {
+			this.game = ServerGame.getMainGame ( );
+			this.setGameState ( GameFields.GameState.inGame );
+			synchronized (game.getClients ()) {
+				game.getClients ( ).add ( this );
+			}
 		}
 		rocket = game.newRocket ( );
 		state = MainPanel.STATE.Game;
@@ -132,11 +148,11 @@ public class Client implements Runnable {
 	}
 
 	private void save () {
-		try {
-			dataBase.saveTirs ( ServerGame.getTirs ( ) , 1 );
-		} catch (SQLException e) {
-			e.printStackTrace ( );
-		}
+//		try {
+//			dataBase.saveTirs ( ServerGame.getTirs ( ) , 1 );
+//		} catch (SQLException e) {
+//			e.printStackTrace ( );
+//		}
 		try {
 			SaveSystem.save ( SaveSystem.SaveMode.game , game , account.getUserName ( ) + "game.json" , rocket );
 		} catch (IOException e) {
@@ -144,32 +160,36 @@ public class Client implements Runnable {
 		}
 	}
 
+	public static ArrayList<Client> getClients () {
+		return clients;
+	}
+
 	private void load () {
 		try {
 			finishGame ( );
-		game = new ServerGame ( 2000 , 1100 , this );
+			game = new ServerGame ( 2000 , 1100 , this );
 			GameForSave gameForSave = ( GameForSave ) SaveSystem.load ( SaveSystem.SaveMode.game ,
-			account.getUserName ()+"game.json" ,this);
+					account.getUserName ( ) + "game.json" , this );
 			if ( gameForSave == null ) {
 				System.out.println ( "fosh" );
 			} else {
 				game.loadGame ( gameForSave );
-			game.start ();
+				game.start ( );
 			}
-			} catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace ( );
 		}
 		game.chickens.clear ( );
 
-		ArrayList<Tir> tirs;
-		try {
-			tirs = dataBase.loadTirs ( );
-			System.out.println ( tirs );
-			System.out.println ( "size" + tirs.size ( ) );
-			ServerGame.setTirs ( tirs );
-		} catch (SQLException e) {
-			e.printStackTrace ( );
-		}
+//		ArrayList<Tir> tirs;
+//		try {
+//			tirs = dataBase.loadTirs ( );
+//			System.out.println ( tirs );
+//			System.out.println ( "size" + tirs.size ( ) );
+//			ServerGame.setTirs ( tirs );
+//		} catch (SQLException e) {
+//			e.printStackTrace ( );
+//		}
 	}
 
 	public Rocket getRocket () {
@@ -184,9 +204,10 @@ public class Client implements Runnable {
 		game.interrupt ( );
 		game = null;
 	}
+
 	public void disconnect () {
 		clients.remove ( this );
-		Account.getLogins ().remove ( account );
-		System.out.println ("client disconnected!!!" );
+		Account.getLogins ( ).remove ( account );
+		System.out.println ( "client disconnected!!!" );
 	}
 }

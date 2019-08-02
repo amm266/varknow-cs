@@ -5,6 +5,7 @@ import game.Menu.SecondMenu;
 import game.swing.MainPanel;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 
 import Box.GameFields;
@@ -14,10 +15,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.io.IOException;
 
-public class Game {
+public class  Game {
 	//forBox
+	private boolean showLouse = false;
 	private Rocket mainRocket;
-	public ArrayList<Rocket> rockets = new ArrayList<> ( );
+	public  ArrayList<Rocket> rockets = new ArrayList<> ( );
 	private volatile ArrayList<Tir> tirs = new ArrayList<> ( );
 	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
 	private ArrayList<Egg> eggs = new ArrayList<> ( );
@@ -36,7 +38,7 @@ public class Game {
 	private BufferedImage bufferedImageBomb;
 	private String NumberOfShoot = "" + MainPanel.NumberOfShoot;
 	static PauseMenu pauseMenu = new PauseMenu ( );
-	public FinalEgg finalEgg;
+	public volatile FinalEgg finalEgg;
 	public BufferedImage bufferedImageHeart;
 	public BufferedImage bufferedImagebackground;
 	public static BufferedImage CoinBufferImage;
@@ -50,7 +52,7 @@ public class Game {
 	public static BufferedImage bufferedImage_Win;
 	//todo
 	private String HeartOfRocketStr = "";
-	private String ScoreStr = "" ;
+	private String ScoreStr = "";
 	public static int NumberOfBomb;
 	public static Point center = new Point ( 350 , 350 );
 
@@ -61,7 +63,6 @@ public class Game {
 		FINAL
 	}
 
-	;
 
 	public enum LEVEL {
 		ONE,
@@ -71,7 +72,6 @@ public class Game {
 		Win
 	}
 
-	;
 
 	public enum GROUP {
 		ONE,
@@ -81,7 +81,7 @@ public class Game {
 		FINAL
 	}
 
-	;
+
 	public static Game.STAGE stage = STAGE.FIRST;
 	private static Game.LEVEL level = LEVEL.ONE;
 	static Game.GROUP group = GROUP.ONE;
@@ -93,9 +93,11 @@ public class Game {
 	}
 
 	public void paint ( Graphics2D g2 ) throws InterruptedException {
-		Thread.sleep ( 50 );
-		g2.setColor(new Color( 68 , 200 , 35 ));
-		g2.fillRect ( 100,100,20,20 );
+		getGameFields ( getGameFields ( ) );
+		System.out.println ( "ping" + System.currentTimeMillis ( ) );
+		//Thread.sleep ( 50 );
+		g2.setColor ( new Color ( 68 , 200 , 35 ) );
+		g2.fillRect ( 100 , 100 , 20 , 20 );
 		long t = System.currentTimeMillis ( );
 		while ( System.currentTimeMillis ( ) - t < 10 ) ;
 		System.out.println ( "in Game" );
@@ -139,7 +141,7 @@ public class Game {
 				chicken.paint ( g2 );
 			}
 		}
-		if ( stage == STAGE.FINAL ) {
+		if ( finalEgg!=null) {
 			//final stage
 			System.out.println ( "stageFinal" );
 			finalEgg.paint ( g2 );
@@ -216,9 +218,9 @@ public class Game {
 		g2.drawImage ( CoinBufferImage , 75 , 1000 , 15 , 15 , null );
 		g2.setColor ( new Color ( 0 , 200 , 200 ) );
 		g2.drawString ( ScoreStr , 50 , 1000 );
-		g2.fillRect ( 100,100,20,20 );
+		g2.fillRect ( 100 , 100 , 20 , 20 );
 		g2.setColor ( new Color ( 200 , 20 , 20 ) );
-		g2.fillRect ( 600,600,20,20 );
+		g2.fillRect ( 600 , 600 , 20 , 20 );
 	}
 
 	private void BombShooting ( Graphics2D g2 ) {
@@ -245,19 +247,31 @@ public class Game {
 			g2.drawImage ( bufferedImageBomb , LastXBomb , LastYBomb , 40 , 40 , null );
 		}
 	}
+
 	public void getGameFields ( GameFields box ) {
+		System.out.println (box.getGameState () );
+		if ( box.getGameState () == GameFields.GameState.louse &&!showLouse){
+			showLouse = true;
+			JOptionPane.showMessageDialog(null, "you louse!", "Info" , JOptionPane.INFORMATION_MESSAGE);
+			System.out.println ("alert" );
+		}
 		rockets = box.getRockets ( );
 		ArrayList<ChickenForSend> chickenForSends = box.getChickenForSends ( );
 		synchronized (chickens) {
-			chickens.clear ();
+			chickens.clear ( );
 			for ( ChickenForSend chickenForSend : chickenForSends ) {
 				chickens.add ( new Chicken ( chickenForSend ) );
 			}
 		}
 		tirs = box.getTirs ( );
 		eggs = box.getEggs ( );
-		stronges = box.getStronges ();
-		coins = box.getCoins ();
+		stronges = box.getStronges ( );
+		coins = box.getCoins ( );
+		finalEgg = box.getFinalEgg ();
+	}
+
+	public GameFields getGameFields () {
+		return MainPanel.getGameFields ( );
 	}
 
 	private void drawTir ( Tir tir , Graphics2D g2 ) {

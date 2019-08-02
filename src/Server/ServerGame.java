@@ -7,9 +7,11 @@ import game.engine.*;
 import game.swing.MainPanel;
 import Box.GameFields;
 
+import java.util.Collections;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
@@ -26,11 +28,11 @@ public class ServerGame extends Thread {
 
 	private int height;
 
-	private ArrayList<Client> clients = new ArrayList<Client> ( );
+	private List<Client> clients = Collections.synchronizedList ( new ArrayList<> ( ) );
 
-	public ArrayList<Rocket> rockets = new ArrayList<> ( );
-
-	private static volatile ArrayList<Tir> tirs = new ArrayList<> ( );
+	public final ArrayList<Rocket> rockets = new ArrayList<> ( );
+	//	private volatile List<Tir> tirs = new Collections.
+	private static final List<Tir> tirs = Collections.synchronizedList ( new ArrayList<Tir> ( ) );
 
 	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
 
@@ -55,16 +57,19 @@ public class ServerGame extends Thread {
 	@Override
 	public void run () {
 		while ( true ) {
+			System.out.println ( "in run" + this );
 			try {
-				sleep ( 300 );
+				sleep ( 30 );
 			} catch (InterruptedException e) {
 				e.printStackTrace ( );
 			}
 			this.chick ( );
 			this.move ( );
 			this.sendGameFields ( );
-			this.paint ();
-			System.out.println ( "Tirs" + tirs.size ( ) );
+			this.paint ( );
+			synchronized (tirs) {
+				System.out.println ( tirs );
+			}
 			System.out.println ( "chi" + chickens.size ( ) );
 		}
 	}
@@ -76,14 +81,17 @@ public class ServerGame extends Thread {
 		this.stage = gameForSave.stage;
 		this.level = gameForSave.level;
 		this.group = gameForSave.group;
-		this.tirs = gameForSave.tirs;
+		synchronized (tirs) {
+			tirs.clear ( );
+			this.tirs.addAll ( gameForSave.tirs );
+		}
 		this.chickens = gameForSave.chickens;
 		this.stronges = gameForSave.stronges;
 		this.eggs = gameForSave.eggs;
 		this.rockets.add ( gameForSave.rockets );
 	}
 
-	public GameForSave saveGame (Rocket rocket) {
+	public GameForSave saveGame ( Rocket rocket ) {
 		GameForSave gameForSave = new GameForSave ( );
 		gameForSave.width = this.width;
 		gameForSave.height = this.height;
@@ -91,7 +99,9 @@ public class ServerGame extends Thread {
 		gameForSave.stage = this.stage;
 		gameForSave.level = this.level;
 		gameForSave.group = this.group;
-		gameForSave.tirs = this.tirs;
+		synchronized (tirs) {
+			//gameForSave.tirs = this.tirs;
+		}
 		gameForSave.chickens = this.chickens;
 		gameForSave.stronges = this.stronges;
 		gameForSave.eggs = this.eggs;
@@ -99,8 +109,11 @@ public class ServerGame extends Thread {
 		return gameForSave;
 	}
 
-	public static ArrayList<Tir> getTirs () {
-		return tirs;
+	public ArrayList<Tir> getTirs () {
+		synchronized (tirs) {
+			//return tirs;
+			return new ArrayList<> ( );
+		}
 	}
 
 	public static void setMainGame ( ServerGame mainGame ) {
@@ -111,18 +124,22 @@ public class ServerGame extends Thread {
 		return mainGame;
 	}
 
-	public static void setTirs ( ArrayList<Tir> tirs ) {
-		ServerGame.tirs = tirs;
+	public void setTirs ( ArrayList<Tir> tirs ) {
+		tirs.clear ( );
+		tirs.addAll ( tirs );
 	}
 
 	public ServerGame ( int width , int height , Client client ) {
 		this.width = width;
 		this.height = height;
-		this.clients.add ( client );
-		chickens.clear ();
+		client.setGameState ( GameFields.GameState.inGame );
+		synchronized (clients) {
+			this.clients.add ( client );
+		}
+		chickens.clear ( );
 	}
 
-	public ArrayList<Client> getClients () {
+	public List<Client> getClients () {
 		return clients;
 	}
 
@@ -137,17 +154,35 @@ public class ServerGame extends Thread {
 		for ( Chicken chicken : chickens ) {
 			chickenForSends.add ( new ChickenForSend ( chicken ) );
 		}
-		GameFields gameFields = new GameFields ( chickenForSends , tirs , eggs , rockets,stronges,coins );
-		for ( Client client : clients ) {
-			client.getMyConnection ( ).send ( gameFields );
+		synchronized (tirs) {
+			synchronized (clients) {
+				GameFields gameFields = new GameFields ( GameFields.GameState.inGame , finalEgg , chickenForSends , new ArrayList<> ( tirs ) , eggs , rockets , stronges , coins );
+				if ( finalEgg != null ) {
+					System.out.println ( "final egg\n" );
+				}
+				for ( Client client : clients ) {
+					gameFields.setGameState ( client.getGameState ( ) );
+					System.out.println ( client.getGameState ( ) );
+					client.getMyConnection ( ).send ( gameFields );
+				}
+				return gameFields;
+			}
 		}
-		return gameFields;
 	}
 
 	public void paint () {
-		for ( Rocket rocket :rockets ) {
-			if ( rocket.getHart ( ) <= 0 ) {
-				System.out.println ( "loooooooooooose" );
+		synchronized (rockets) {
+			synchronized (clients) {
+				for ( Client client : clients ) {
+					Rocket rocket = client.getRocket ( );
+					if ( rocket != null && rocket.getHart ( ) <= 0 ) {
+						rockets.remove ( rocket );
+						rocket = null;
+						client.setRocket ( null );
+						client.setGameState ( GameFields.GameState.louse );
+						System.out.println ( "del rocket" );
+					}
+				}
 			}
 		}
 		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
@@ -165,30 +200,39 @@ public class ServerGame extends Thread {
 				k--;
 			}
 		}
-		for ( int i = 0 ; i < tirs.size ( ) ; i++ ) {
-			Tir tir = tirs.get ( i );
-			if ( tir.getX ( ) > 2000 | tir.getY ( ) > 1100 | tir.getX ( ) < 0 | tir.getY ( ) < 0 ) {
-				tirs.remove ( tir );
-				i--;
-			}
-			if ( CheckQuancidence ( tir ) && stage == game.engine.Game.STAGE.FINAL ) {
-				finalEgg.AmountOfLife--;
-				tirs.remove ( tir );
-			}
-			for ( int j = 0 ; j < chickens.size ( ) ; j++ ) {
-				Chicken chicken = chickens.get ( j );
-				if ( CheckQuancidence ( chicken , tir ) ) {
-					//todo
-					//if ( Random ( 6 ) <= 6 ) {
+		synchronized (tirs) {
+			for ( int i = 0 ; i < tirs.size ( ) ; i++ ) {
+				Tir tir = tirs.get ( i );
+				if ( tir.getX ( ) > 2000 | tir.getY ( ) > 1100 | tir.getX ( ) < 0 | tir.getY ( ) < 0 ) {
+					tirs.remove ( tir );
+					i--;
+				}
+				if ( finalEgg != null ) {
+					synchronized (finalEgg) {
+						synchronized (finalEgg.lock) {
+							if ( CheckQuancidence ( tir ) && stage == game.engine.Game.STAGE.FINAL ) {
+								finalEgg.AmountOfLife--;
+								System.out.println ( "life   " + finalEgg.AmountOfLife );
+								tirs.remove ( tir );
+							}
+						}
+					}
+				}
+				for ( int j = 0 ; j < chickens.size ( ) ; j++ ) {
+					Chicken chicken = chickens.get ( j );
+					if ( CheckQuancidence ( chicken , tir ) ) {
+						//todo
+						//if ( Random ( 6 ) <= 6 ) {
 
 						Strong ( chicken.getX ( ) , chicken.getY ( ) );
-					//}
-					//if ( Random ( 6 ) <= 6 ) {
+						//}
+						//if ( Random ( 6 ) <= 6 ) {
 						Coin ( chicken.getX ( ) , chicken.getY ( ) );
-					//}
-					chickens.remove ( chicken );
-					j--;
-					tirs.remove ( tir );
+						//}
+						chickens.remove ( chicken );
+						j--;
+						tirs.remove ( tir );
+					}
 				}
 			}
 		}
@@ -279,22 +323,28 @@ public class ServerGame extends Thread {
 		if ( stage == game.engine.Game.STAGE.FINAL ) {
 			//final stage
 			System.out.println ( "stagefinal" );
-			if ( finalEgg.AmountOfLife <= 1 ) {
-				// stage=STAGE.FIRST;
-				if ( level == game.engine.Game.LEVEL.FOUR ) {
-					level = game.engine.Game.LEVEL.Win;
+			if ( finalEgg != null ) {
+
+				synchronized (finalEgg) {
+					finalEgg = new FinalEgg ( 1 );
+					if ( finalEgg.AmountOfLife <= 1 ) {
+						// stage=STAGE.FIRST;
+						if ( level == game.engine.Game.LEVEL.FOUR ) {
+							level = game.engine.Game.LEVEL.Win;
+						}
+						if ( level == game.engine.Game.LEVEL.THREE ) {
+							level = game.engine.Game.LEVEL.FOUR;
+						}
+						if ( level == game.engine.Game.LEVEL.TWO ) {
+							level = game.engine.Game.LEVEL.THREE;
+						}
+						if ( level == game.engine.Game.LEVEL.ONE ) {
+							level = game.engine.Game.LEVEL.TWO;
+						}
+						NumberOfBomb++;
+						finalEgg.Exictance = false;
+					}
 				}
-				if ( level == game.engine.Game.LEVEL.THREE ) {
-					level = game.engine.Game.LEVEL.FOUR;
-				}
-				if ( level == game.engine.Game.LEVEL.TWO ) {
-					level = game.engine.Game.LEVEL.THREE;
-				}
-				if ( level == game.engine.Game.LEVEL.ONE ) {
-					level = game.engine.Game.LEVEL.TWO;
-				}
-				NumberOfBomb++;
-				finalEgg.Exictance = false;
 			}
 		}
 		System.out.println ( stage );
@@ -316,7 +366,9 @@ public class ServerGame extends Thread {
 			}
 		}
 		if ( ! Objects.isNull ( finalEgg ) )
-			finalEgg.move ( );
+			synchronized (finalEgg) {
+				finalEgg.move ( );
+			}
 		synchronized (eggs) {
 			for ( Egg egg : eggs ) {
 				egg.move ( );
@@ -335,40 +387,39 @@ public class ServerGame extends Thread {
 	}
 
 	public void fire ( Rocket rocket ) {
-		System.out.println ( "tirs" + tirs.size ( ) );
-		if ( ! SecondMenu_Setting.typeOfShoot ) {
-			// System.out.println("multi");
-		}
+		System.out.println ( "in fire" + this );
 		if ( SecondMenu_Setting.typeOfShoot ) {
-//			synchronized (tirs) {
-			int r = 25;
-			int v = 5;
-			if ( Tir.StrongOfTir <= 1 ) {
-				System.out.println ( "fire" );
-				double degree = ( 90 ) / 180.0 * Math.PI;
-				tirs.add ( new Tir ( rocket.getX ( ) ,
-						rocket.getY ( ) + - r * Math.sin ( degree ) ,
-						v * Math.cos ( degree ) ,
-						- v * Math.sin ( degree ) ) );
-			} else {
-				System.out.println ( "fire" );
-				for ( int i = 0 ; i < 5 ; i++ ) {
-					double degree = ( 70 + i * 10 ) / 180.0 * Math.PI;
-					tirs.add ( new Tir ( rocket.getX ( ) + r * Math.cos ( degree ) ,
+			synchronized (tirs) {
+				int r = 25;
+				int v = 5;
+				if ( Tir.StrongOfTir <= 1 ) {
+					double degree = ( 90 ) / 180.0 * Math.PI;
+					tirs.add ( new Tir ( rocket.getX ( ) ,
 							rocket.getY ( ) + - r * Math.sin ( degree ) ,
-							5 * Math.cos ( degree ) ,
-							- 5 * Math.sin ( degree ) ) );
+							v * Math.cos ( degree ) ,
+							- v * Math.sin ( degree ) ) );
+				} else {
+					System.out.println ( "fire" );
+					for ( int i = 0 ; i < 5 ; i++ ) {
+						double degree = ( 70 + i * 10 ) / 180.0 * Math.PI;
+						tirs.add ( new Tir ( rocket.getX ( ) + r * Math.cos ( degree ) ,
+								rocket.getY ( ) + - r * Math.sin ( degree ) ,
+								5 * Math.cos ( degree ) ,
+								- 5 * Math.sin ( degree ) ) );
+					}
+					// System.out.println("single");
 				}
-				// System.out.println("single");
-
-				//	}
+				System.out.println ( "tirs   " + tirs );
 			}
 		}
+
 	}
 
 	public void chick () {
 		System.out.println ( "stage " + stage + " level " + level );
-		if ( stage == game.engine.Game.STAGE.FIRST & chickens.size ( ) == 0 ) {
+		if ( stage == game.engine.Game.STAGE.FIRST
+				& chickens.size ( ) == 0
+		) {
 			if ( level == game.engine.Game.LEVEL.ONE ) {
 				Group1 ( );
 				//  group=GROUP.ONE;
@@ -443,7 +494,7 @@ public class ServerGame extends Thread {
 		synchronized (stronges) {
 			stronges.add ( new Stronge ( StrongX , StrongY ) );
 		}
-		int a=1;
+		int a = 1;
 	}
 
 	public void Coin ( double CoinX , double CoinY ) {
@@ -559,7 +610,13 @@ public class ServerGame extends Thread {
 	}
 
 	public boolean CheckQuancidence ( Tir tir ) {
-		return ( tir.getY ( ) <= 575 & tir.getX ( ) <= 1100 & tir.getX ( ) >= 700 );
+		synchronized (finalEgg.lock) {
+			if ( finalEgg != null ) {
+				System.out.println ( "life   " + finalEgg.AmountOfLife );
+
+			}
+			return ( tir.getY ( ) <= 575 & tir.getX ( ) <= 1100 & tir.getX ( ) >= 700 );
+		}
 	}
 
 	public Rocket CheckQuancidence ( Egg egg ) {
@@ -576,7 +633,7 @@ public class ServerGame extends Thread {
 
 	public Rocket CheckQuancidence ( double y , double x ) {
 		for ( Rocket rocket : rockets ) {
-			if ( y >= rocket.getY () - 20 & y <= rocket.getY () + 20 && x >= rocket.getX () - 20 & x <= rocket.getX () + 20 ) {
+			if ( y >= rocket.getY ( ) - 20 & y <= rocket.getY ( ) + 20 && x >= rocket.getX ( ) - 20 & x <= rocket.getX ( ) + 20 ) {
 				return rocket;
 			}
 		}

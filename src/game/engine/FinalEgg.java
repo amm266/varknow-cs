@@ -10,34 +10,46 @@ import java.util.Objects;
 import java.util.Random;
 
 public class FinalEgg implements Animatable {
-
+    public Object lock = new Object ();
     public int life;
-    public double HeightOfEgg = -300;
-    public static int AmountOfLife;
-    public boolean Exictance;
+    public double HeightOfEgg = 70;
+    public volatile static int AmountOfLife;
+    public volatile boolean Exictance;
+    private static BufferedImage SmartEggbufferedImage;
+
+    static {
+        try {
+            SmartEggbufferedImage = ImageIO.read ( new File ( "resources/Chicken_egg_broken_break-512.png" ) );
+        } catch (IOException e) {
+            e.printStackTrace ( );
+        }
+    }
+
     public ArrayList<FinalEggShoot> finalEggShoots = new ArrayList<>();
     private long TimeOfFinalEggShoot = System.currentTimeMillis();
 
 
     public FinalEgg(int life) {
         this.life = life;
-
-        AmountOfLife = 250 * life;
+        synchronized (lock) {
+            AmountOfLife = 10 * life;
+            System.out.println ("set life" );
+        }
         Exictance = true;
     }
 
     @Override
     public void paint(Graphics2D g2) {
         if (HeightOfEgg < 75) {
-            //g2.drawImage(SmartEggbufferedImage, 650, (int) HeightOfEgg
-           //         , 500, 500, null);
+            g2.drawImage(SmartEggbufferedImage, 650, (int) HeightOfEgg
+                    , 500, 500, null);
         } else {
             if (AmountOfLife <= 1)
                 Exictance = false;
 
             if (Exictance) {
-                //g2.drawImage(Game.SmartEggbufferedImage, 700, (int) HeightOfEgg
-                   //     , 500, 500, null);
+                g2.drawImage(SmartEggbufferedImage, 700, (int) HeightOfEgg
+                        , 500, 500, null);
 
             }
         }
@@ -51,9 +63,7 @@ public class FinalEgg implements Animatable {
                     FinalEggShoot finalEggShoot = finalEggShoots.get ( i );
                         finalEggShoot.paint(g2);
                         finalEggShoot.move();
-
-
-//                    if(Math.abs(finalEggShoot.getX()- (Rocket.LastXRocket+5))<5 & Math.abs(finalEggShoot.getY()- (Rocket.LastYRocket+5))<5){
+//                    if(Math.abs(finalEggShoot.getX()- (Rocket.x+5))<5 & Math.abs(finalEggShoot.getY()- (Rocket.LastYRocket+5))<5){
 //                   //     Rocket.decreaseHart ( 1 );
 //                        finalEggShoots.remove(finalEggShoot);
 //                        i--;

@@ -9,6 +9,10 @@
     </JAVADOC>
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/com/gilecode/yagson/yagson/0.5/yagson-0.5-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/gilecode/yagson/yagson/0.5/yagson-0.5-sources.jar!/com/gilecode/yagson" />
     </SOURCES>
+    <excluded>
+      <root url="jar://$MAVEN_REPOSITORY$/com/gilecode/yagson/yagson/0.5/yagson-0.5-sources.jar!/" />
+    </excluded>
   </library>
 </component>
