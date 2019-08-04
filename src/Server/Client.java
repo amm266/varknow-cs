@@ -33,13 +33,14 @@ public class Client implements Runnable {
 
 	@Override
 	public void run () {
+		game = new ServerGame ( 2000 , 1100 , this );
 		while ( true ) {
+		//	game = new ServerGame ( 2000 , 1100 , this );
 //			check myConnection
 			if ( ! myConnection.isConnect ( ) ) {
 				disconnect ( );
 				break;
 			}
-			game = new ServerGame ( 2000 , 1100 , this );
 			//get from client
 			Box box = ( Box ) myConnection.get ( );
 			int a = 1;
@@ -77,6 +78,7 @@ public class Client implements Runnable {
 					break;
 				case fire:
 					game.fire ( rocket );
+					int x=2;
 					break;
 				case setLocation:
 					if ( gameState == GameFields.GameState.inGame ) {
@@ -111,6 +113,7 @@ public class Client implements Runnable {
 
 	public void setGameState ( GameFields.GameState gameState ) {
 		this.gameState = gameState;
+		int a=1;
 	}
 
 	public GameFields.GameState getGameState () {

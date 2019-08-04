@@ -27,7 +27,7 @@ public class ServerGame extends Thread {
 
 	private int height;
 
-	private final List<Client> clients = Collections.synchronizedList ( new ArrayList<Client> ( ) );
+	private volatile List<Client> clients =( new ArrayList<Client> ( ) );
 
 	public final ArrayList<Rocket> rockets = new ArrayList<> ( );
 	//	private volatile List<Tir> tirs = new Collections.
@@ -175,7 +175,7 @@ public class ServerGame extends Thread {
 			}
 		}
 	}
-	public synchronized void paint () {
+	public void paint () {
 		synchronized (loadLock) {
 			if ( isLoad ) {
 				this.loadGame ( saveGame ( null ) );
@@ -185,6 +185,7 @@ public class ServerGame extends Thread {
 		if ( finalEgg != null ) {
 			synchronized (clients){
 				if ( FinalEgg.AmountOfLife<1 ){
+					finalEgg = null;
 					System.out.println ("win");
 					for ( Client client:clients ){
 						client.setGameState ( GameFields.GameState.win );
@@ -194,8 +195,9 @@ public class ServerGame extends Thread {
 		}
 		synchronized (rockets) {
 			synchronized (clients) {
-				for ( int i=0;i<clients.size ();i++ ) {
-					Client client = clients.get ( i );
+				ArrayList<Client> clients1 = new ArrayList<Client> ( clients );
+				for ( int i=0;i<clients1.size ();i++ ) {
+					Client client = clients1.get ( i );
 					Rocket rocket = client.getRocket ( );
 					if ( rocket != null && rocket.getHart ( ) <= 0 ) {
 						rockets.remove ( rocket );
@@ -203,8 +205,11 @@ public class ServerGame extends Thread {
 						System.out.println ("after set"+client.getGameState());
 						client.setRocket ( null );
 						System.out.println ( "del rocket" );
+						clients1.set ( i,client );
 					}
 				}
+				clients = clients1;
+				int a=1;
 			}
 		}
 		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
@@ -352,6 +357,9 @@ public class ServerGame extends Thread {
 						finalEgg = new FinalEgg ( 1 );
 					}
 					if ( finalEgg.AmountOfLife <= 1 ) {
+						for ( Client client:clients ){
+							client.setGameState ( GameFields.GameState.win );
+						}
 						// stage=STAGE.FIRST;
 						if ( level == game.engine.Game.LEVEL.FOUR ) {
 							level = game.engine.Game.LEVEL.Win;
@@ -411,7 +419,7 @@ public class ServerGame extends Thread {
 		}
 	}
 
-	public synchronized void fire ( Rocket rocket ) {
+	public void fire ( Rocket rocket ) {
 		if ( SecondMenu_Setting.typeOfShoot ) {
 			synchronized (tirs) {
 				int r = 25;
