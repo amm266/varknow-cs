@@ -15,19 +15,12 @@ import java.util.ArrayList;
 public class Client implements Runnable {
 	private static ArrayList<Client> clients = new ArrayList<> ( );
 	private MyConnection myConnection;
-	private ServerGame game;
+	private volatile ServerGame game;
 	private Account account = null;
 	private Rocket rocket;
-	private MainPanel.STATE state;
-	private DataBase dataBase;
 	private volatile GameFields.GameState gameState;
 
 	public Client ( Socket socket ) {
-		try {
-			dataBase = new DataBase ( );
-		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace ( );
-		}
 		myConnection = new MyConnection ( socket , this );
 		new Thread ( myConnection ).start ( );
 		clients.add ( this );
@@ -86,8 +79,14 @@ public class Client implements Runnable {
 					game.fire ( rocket );
 					break;
 				case setLocation:
-					rocket.setLocation ( box.getX ( ) , box.getY ( ) );
-					answer = null;
+					if ( gameState == GameFields.GameState.inGame ) {
+						try {
+							rocket.setLocation ( box.getX ( ) , box.getY ( ) );
+							answer = null;
+						} catch (Exception e) {
+							e.printStackTrace ( );
+						}
+					}
 					break;
 				case startNewGame:
 					newGame ( answer );
@@ -97,6 +96,7 @@ public class Client implements Runnable {
 					break;
 				case loadGame:
 					load ( );
+					System.out.println ("client rocket"+rocket );
 					break;
 				case chick:
 					break;
@@ -143,7 +143,6 @@ public class Client implements Runnable {
 			}
 		}
 		rocket = game.newRocket ( );
-		state = MainPanel.STATE.Game;
 		answer.setSucces ( true );
 	}
 
@@ -174,13 +173,11 @@ public class Client implements Runnable {
 				System.out.println ( "fosh" );
 			} else {
 				game.loadGame ( gameForSave );
-				game.start ( );
+				//game.start ( );
 			}
 		} catch (IOException e) {
 			e.printStackTrace ( );
 		}
-		game.chickens.clear ( );
-
 //		ArrayList<Tir> tirs;
 //		try {
 //			tirs = dataBase.loadTirs ( );
@@ -201,7 +198,7 @@ public class Client implements Runnable {
 	}
 
 	private void finishGame () {
-		game.interrupt ( );
+		game.stopThread ();
 		game = null;
 	}
 

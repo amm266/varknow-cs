@@ -314,7 +314,7 @@ public class MainPanel extends JPanel implements KeyListener {
 class MoveRocket extends Thread{
 	private static int x;
 	private static int y;
-	private static int waitMilis = 15;
+	private static int waitMilis = 10;
 	public static void setLocation(int x,int y){
 		MoveRocket.x = x;
 		MoveRocket.y = y;

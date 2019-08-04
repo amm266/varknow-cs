@@ -15,7 +15,7 @@ public class Account {
 	private static DataBase dataBase;
 
 
-	public static void DBTest () {
+	public static void load () {
 		try {
 			dataBase = new DataBase ( );
 			accounts = dataBase.loadAccounts ( );

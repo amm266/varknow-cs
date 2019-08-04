@@ -1,5 +1,6 @@
 package game;
 
+import Box.Box;
 import Box.BoxFather;
 import Box.GameFields;
 import Server.Client;
@@ -9,9 +10,7 @@ import game.swing.MainPanel;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.Scanner;
+import java.util.*;
 
 public class MyConnection implements Runnable {
 	private Client client;
@@ -35,6 +34,7 @@ public class MyConnection implements Runnable {
 
 	public MyConnection ( String ip ) {
 		try {
+			System.out.println ("trying connect to "+ip );
 			socket = new Socket ( ip , 8888 );
 			scanner = new Scanner ( socket.getInputStream ( ) );
 			formatter = new Formatter ( socket.getOutputStream ( ) );
@@ -104,8 +104,8 @@ public class MyConnection implements Runnable {
 	}
 
 	public void send ( BoxFather box ) {
-		send.addToQueue ( box );
 		synchronized (send.boxFathers) {
+			send.addToQueue ( box );
 			send.getBoxFathers ( ).notifyAll ( );
 		}
 		//System.out.println ("some box added to send queue!!!" );
@@ -136,9 +136,7 @@ public class MyConnection implements Runnable {
 	}
 
 	public GameFields getGameFields () {
-		synchronized (gameFields) {
 			return gameFields;
-		}
 	}
 }
 
@@ -149,7 +147,7 @@ class Send implements Runnable {
 		this.myConnection = myConnection;
 	}
 
-	volatile ArrayList<BoxFather> boxFathers = new ArrayList<BoxFather> ( );
+	final List<BoxFather> boxFathers = Collections.synchronizedList ( new ArrayList<BoxFather> (  ) );
 
 	@Override
 	public void run () {
@@ -170,7 +168,7 @@ class Send implements Runnable {
 		}
 	}
 
-	public ArrayList<BoxFather> getBoxFathers () {
+	public List<BoxFather> getBoxFathers () {
 		return boxFathers;
 	}
 
@@ -183,6 +181,7 @@ class Send implements Runnable {
 		//System.out.println ("make simple null" );
 		String obj = "";
 		try{
+
 			obj = MyConnection.yaGson.toJson ( box );
 		}
 		catch (Exception e){
@@ -192,14 +191,12 @@ class Send implements Runnable {
 		try {
 			synchronized (obj) {
 				if ( box.getBoxType ( ) == BoxFather.BoxType.gameField ) {
-//					System.out.println ( "data" + obj.toCharArray ( ).length );
-					System.out.println ("ping"+ System.currentTimeMillis () );
+					System.out.println ( "data" + obj.toCharArray ( ).length );
 				}
 			}
 		} catch (Exception e) {
 			//e.printStackTrace ();
 		}
-		System.out.println ( "sended" );
 		myConnection.formatter.flush ( );
 		//System.out.println ("send Box :" + box.getBoxType () );
 	}
@@ -207,11 +204,9 @@ class Send implements Runnable {
 
 class Get implements Runnable {
 	private MyConnection myConnection;
-
 	Get ( MyConnection myConnection ) {
 		this.myConnection = myConnection;
 	}
-
 	@Override
 	public void run () {
 		while ( true ) {
@@ -227,11 +222,10 @@ class Get implements Runnable {
 				switch ( myConnection.tmp.getBoxType ( ) ) {
 					case gameField:
 						//MainPanel.setGameField ( ( GameFields ) myConnection.tmp );
-						//System.out.println ("ping"+ System.currentTimeMillis () );
 						synchronized (myConnection.gameFields) {
 							myConnection.gameFields = ( GameFields ) myConnection.tmp;
 						}
-						System.out.println ( "get fields" );
+						System.out.println ( "data" + get.toCharArray ( ).length );
 						myConnection.tmp = null;
 						break;
 					case simple:

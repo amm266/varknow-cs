@@ -4,7 +4,6 @@ import com.gilecode.yagson.YaGson;
 import game.engine.Rocket;
 
 import java.io.*;
-import java.sql.Statement;
 
 public class SaveSystem {
 	private static YaGson yaGson = new YaGson ();
@@ -32,7 +31,7 @@ public class SaveSystem {
 				case game:
 					GameForSave gameForSave =  yaGson.fromJson ( fileReader,GameForSave.class );
 					int a=1;
-					client.setRocket (gameForSave.rockets);
+					client.setRocket (gameForSave.rocket );
 					return gameForSave;
 			}
 		}

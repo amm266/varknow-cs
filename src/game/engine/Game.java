@@ -18,14 +18,26 @@ import java.io.IOException;
 public class  Game {
 	//forBox
 	private boolean showLouse = false;
+	private boolean showWin = false;
 	private Rocket mainRocket;
 	public  ArrayList<Rocket> rockets = new ArrayList<> ( );
 	private volatile ArrayList<Tir> tirs = new ArrayList<> ( );
-	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
+	public final ArrayList<ChickenForSend> chickens = new ArrayList<> ( );
 	private ArrayList<Egg> eggs = new ArrayList<> ( );
 	private ArrayList<Coin> coins = new ArrayList<> ( );
 	private ArrayList<Stronge> stronges = new ArrayList<> ( );
 	//local
+	public static transient BufferedImage bufferImageChicken;
+	{
+		try {
+			bufferImageChicken = ImageIO.read ( new File ( "resources/rchicken.png" ) );
+		} catch (IOException e) {
+			e.printStackTrace ( );
+		}
+	}
+	private String fps;
+	private int fpsCounter = 0;
+	private long fpsTime;
 	private int LastXBomb;
 	private int LastYBomb;
 	private int j = 0;
@@ -93,8 +105,9 @@ public class  Game {
 	}
 
 	public void paint ( Graphics2D g2 ) throws InterruptedException {
-		getGameFields ( getGameFields ( ) );
-		System.out.println ( "ping" + System.currentTimeMillis ( ) );
+		processFps ( );
+		GameFields gameFields = getGameFields ();
+		getGameFields ( gameFields );
 		//Thread.sleep ( 50 );
 		g2.setColor ( new Color ( 68 , 200 , 35 ) );
 		g2.fillRect ( 100 , 100 , 20 , 20 );
@@ -137,14 +150,17 @@ public class  Game {
 			egg.paint ( g2 );
 		}
 		synchronized (chickens) {
-			for ( Chicken chicken : chickens ) {
+			for ( ChickenForSend chicken : chickens ) {
 				chicken.paint ( g2 );
 			}
 		}
+		System.out.println ("final egg:  "+finalEgg );
 		if ( finalEgg!=null) {
-			//final stage
 			System.out.println ( "stageFinal" );
 			finalEgg.paint ( g2 );
+		}
+		else {
+			int a=1;
 		}
 		for ( Rocket rocket : rockets )
 			rocket.paint ( g2 );
@@ -152,9 +168,18 @@ public class  Game {
 			pauseMenu.paint ( g2 );
 		}
 		System.out.println ( stage );
-		synchronized (chickens) {
-			System.out.println ( chickens.size ( ) );
+		System.out.println ( chickens.size ( ) );
+		g2.setFont ( new Font ( "Arial" , 250 , 30 ) );
+		g2.drawString ( fps , 2000 / 2 - 300 , 1100 / 2 );
+	}
+
+	private void processFps () {
+		if ( System.currentTimeMillis ()>fpsTime+1000 ){
+			fps = "fps "+fpsCounter;
+			fpsCounter = 0;
+			fpsTime = System.currentTimeMillis ();
 		}
+		fpsCounter++;
 	}
 
 	private void MoveBackground ( Graphics2D g2 ) {
@@ -255,13 +280,17 @@ public class  Game {
 			JOptionPane.showMessageDialog(null, "you louse!", "Info" , JOptionPane.INFORMATION_MESSAGE);
 			System.out.println ("alert" );
 		}
+		if ( box.getGameState () == GameFields.GameState.win &&!showWin){
+			showWin = true;
+			JOptionPane.showMessageDialog(null, "you win!", "Info" , JOptionPane.INFORMATION_MESSAGE);
+			System.out.println ("alert" );
+			level = LEVEL.Win;
+		}
+
 		rockets = box.getRockets ( );
-		ArrayList<ChickenForSend> chickenForSends = box.getChickenForSends ( );
 		synchronized (chickens) {
 			chickens.clear ( );
-			for ( ChickenForSend chickenForSend : chickenForSends ) {
-				chickens.add ( new Chicken ( chickenForSend ) );
-			}
+			chickens.addAll ( box.getChickenForSends () );
 		}
 		tirs = box.getTirs ( );
 		eggs = box.getEggs ( );

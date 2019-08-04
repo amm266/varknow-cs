@@ -23,7 +23,6 @@ public class Chicken implements Animatable {
 	private double vx;
 	private double vy;
 	private int MiddelOfChickenX;
-	//public static boolean ChickenExictance = true;
 	private double angel3;
 	private double angel2;
 	private double angel1;

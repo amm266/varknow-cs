@@ -72,8 +72,13 @@ public class SecondMenu extends JPanel implements Animatable, KeyListener, Actio
 
 		if ( ( x > 440 & x < 560 ) & ( y < 230 & y > 200 ) ) {
 			// RESUME
-			MainPanel.load ( );
 			MainPanel.startNewGame ( );
+			try {
+				Thread.sleep ( 1000 );
+			} catch (InterruptedException e) {
+				e.printStackTrace ( );
+			}
+			MainPanel.load ( );
 
 		}
 

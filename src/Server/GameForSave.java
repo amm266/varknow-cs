@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class GameForSave {
 	int width;
 	int height;
-	Rocket rockets;
+	Rocket rocket;
 	ArrayList<Tir> tirs;
 	ArrayList<Chicken> chickens;
 	ArrayList<Egg> eggs;
