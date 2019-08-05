@@ -176,7 +176,7 @@ public class Client implements Runnable {
 				System.out.println ( "fosh" );
 			} else {
 				game.loadGame ( gameForSave );
-				//game.start ( );
+				game.start ( );
 			}
 		} catch (IOException e) {
 			e.printStackTrace ( );

@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class ServerGame extends Thread {
 	private volatile boolean runFlag;
-	private final static  Object loadLock = new Object ();
+	private final static Object loadLock = new Object ( );
 	private static volatile boolean isLoad = false;
 	private static volatile ServerGame mainGame;
 	public static int NumberOfChickensG1 = 40;
@@ -22,37 +22,21 @@ public class ServerGame extends Thread {
 	public static int NumberOfChickensG4 = 70;
 	public static int NumberOfBomb;
 	public static Point center = new Point ( 350 , 350 );
-
 	private int width;
-
 	private int height;
-
-	private volatile List<Client> clients =( new ArrayList<Client> ( ) );
-
+	private volatile List<Client> clients = ( new ArrayList<Client> ( ) );
 	public final ArrayList<Rocket> rockets = new ArrayList<> ( );
-	//	private volatile List<Tir> tirs = new Collections.
-	private static final List<Tir> tirs = Collections.synchronizedList ( new ArrayList<Tir> ( ) );
-
+	private final List<Tir> tirs = Collections.synchronizedList ( new ArrayList<Tir> ( ) );
 	public volatile ArrayList<Chicken> chickens = new ArrayList<> ( );
-
 	private volatile ArrayList<Egg> eggs = new ArrayList<> ( );
-
 	private final ArrayList<Coin> coins = new ArrayList<> ( );
-
 	private volatile ArrayList<Stronge> stronges = new ArrayList<> ( );
-
 	public int G1Transform = 0;
-
 	public FinalEgg finalEgg;
-
 	private long EggTime = System.currentTimeMillis ( );
-
 	public game.engine.Game.STAGE stage = game.engine.Game.STAGE.FIRST;
-
 	public game.engine.Game.LEVEL level = game.engine.Game.LEVEL.ONE;
-
 	public game.engine.Game.GROUP group = game.engine.Game.GROUP.ONE;
-
 	@Override
 	public synchronized void run () {
 		while ( runFlag ) {
@@ -84,27 +68,23 @@ public class ServerGame extends Thread {
 			tirs.clear ( );
 			tirs.addAll ( gameForSave.tirs );
 		}
-		this.chickens.clear ();
+		this.chickens.clear ( );
 		this.chickens.addAll ( gameForSave.chickens );
-		this.stronges.clear ();
+		this.stronges.clear ( );
 		this.stronges.addAll ( gameForSave.stronges );
-		this.eggs.clear ();
+		this.eggs.clear ( );
 		this.eggs.addAll ( gameForSave.eggs );
-		rockets.clear ();
+		rockets.clear ( );
 		this.rockets.add ( gameForSave.rocket );
 		mainGame = this;
 		synchronized (loadLock) {
 			isLoad = true;
 		}
-		int a=1;
-		System.out.println ("load"+rockets);
+		int a = 1;
+		System.out.println ( "load" + rockets );
 	}
 
-	public static List<Tir> getTirs () {
-		return tirs;
-	}
-
-	public synchronized GameForSave saveGame ( Rocket rocket ) {
+	public GameForSave saveGame ( Rocket rocket ) {
 		GameForSave gameForSave = new GameForSave ( );
 		gameForSave.width = mainGame.width;
 		gameForSave.height = mainGame.height;
@@ -120,11 +100,11 @@ public class ServerGame extends Thread {
 		gameForSave.eggs = mainGame.eggs;
 		if ( rocket == null ) {
 			gameForSave.rocket = mainGame.rockets.get ( 0 );
-		}
-		else
-		gameForSave.rocket = rocket;
+		} else
+			gameForSave.rocket = rocket;
 		return gameForSave;
 	}
+
 	public static void setMainGame ( ServerGame mainGame ) {
 		ServerGame.mainGame = mainGame;
 	}
@@ -132,7 +112,8 @@ public class ServerGame extends Thread {
 	public static ServerGame getMainGame () {
 		return mainGame;
 	}
-	public  ServerGame ( int width , int height , Client client ) {
+
+	public ServerGame ( int width , int height , Client client ) {
 		this.width = width;
 		this.height = height;
 		client.setGameState ( GameFields.GameState.inGame );
@@ -142,9 +123,11 @@ public class ServerGame extends Thread {
 		runFlag = true;
 		chickens.clear ( );
 	}
-	public void stopThread(){
+
+	public void stopThread () {
 		runFlag = false;
 	}
+
 	public List<Client> getClients () {
 		return clients;
 	}
@@ -175,6 +158,7 @@ public class ServerGame extends Thread {
 			}
 		}
 	}
+
 	public void paint () {
 		synchronized (loadLock) {
 			if ( isLoad ) {
@@ -183,11 +167,11 @@ public class ServerGame extends Thread {
 			}
 		}
 		if ( finalEgg != null ) {
-			synchronized (clients){
-				if ( FinalEgg.AmountOfLife<1 ){
+			synchronized (clients) {
+				if ( FinalEgg.AmountOfLife < 1 ) {
 					finalEgg = null;
-					System.out.println ("win");
-					for ( Client client:clients ){
+					System.out.println ( "win" );
+					for ( Client client : clients ) {
 						client.setGameState ( GameFields.GameState.win );
 					}
 				}
@@ -196,20 +180,20 @@ public class ServerGame extends Thread {
 		synchronized (rockets) {
 			synchronized (clients) {
 				ArrayList<Client> clients1 = new ArrayList<Client> ( clients );
-				for ( int i=0;i<clients1.size ();i++ ) {
+				for ( int i = 0 ; i < clients1.size ( ) ; i++ ) {
 					Client client = clients1.get ( i );
 					Rocket rocket = client.getRocket ( );
 					if ( rocket != null && rocket.getHart ( ) <= 0 ) {
 						rockets.remove ( rocket );
 						client.setGameState ( GameFields.GameState.louse );
-						System.out.println ("after set"+client.getGameState());
+						System.out.println ( "after set" + client.getGameState ( ) );
 						client.setRocket ( null );
 						System.out.println ( "del rocket" );
-						clients1.set ( i,client );
+						clients1.set ( i , client );
 					}
 				}
 				clients = clients1;
-				int a=1;
+				int a = 1;
 			}
 		}
 		for ( int k = 0 ; k < eggs.size ( ) ; k++ ) {
@@ -251,10 +235,10 @@ public class ServerGame extends Thread {
 						//todo
 						if ( Random ( 100 ) <= 6 ) {
 
-						Strong ( chicken.getX ( ) , chicken.getY ( ) );
+							Strong ( chicken.getX ( ) , chicken.getY ( ) );
 						}
 						if ( Random ( 100 ) <= 6 ) {
-						Coin ( chicken.getX ( ) , chicken.getY ( ) );
+							Coin ( chicken.getX ( ) , chicken.getY ( ) );
 						}
 						chickens.remove ( chicken );
 						j--;
@@ -334,8 +318,6 @@ public class ServerGame extends Thread {
 			}
 		}
 		if ( stage == game.engine.Game.STAGE.THIRD ) {
-			//third stage
-			//System.out.println("stage3");
 			if ( chickens.size ( ) > 0 ) {
 				NumberOfChickensG3 = chickens.size ( );
 				numberOfEgg = NumberOfChickensG3;
@@ -357,7 +339,7 @@ public class ServerGame extends Thread {
 						finalEgg = new FinalEgg ( 1 );
 					}
 					if ( finalEgg.AmountOfLife <= 1 ) {
-						for ( Client client:clients ){
+						for ( Client client : clients ) {
 							client.setGameState ( GameFields.GameState.win );
 						}
 						// stage=STAGE.FIRST;
@@ -527,7 +509,6 @@ public class ServerGame extends Thread {
 		}
 		int a = 1;
 	}
-
 	public void Coin ( double CoinX , double CoinY ) {
 		synchronized (coins) {
 			coins.add ( new Coin ( CoinX ,
@@ -535,7 +516,6 @@ public class ServerGame extends Thread {
 					1 ) );
 		}
 	}
-
 	public void Egg ( int NumberOfEggs , double Eggx , double Eggy ) {
 		synchronized (eggs) {
 			int r = 25;
@@ -544,9 +524,7 @@ public class ServerGame extends Thread {
 			}
 		}
 	}
-
 	public void Group1 () {
-
 		synchronized (chickens) {
 			int r = 25;
 			for ( int i = 0 ; i < 40 ; i++ ) {
@@ -585,16 +563,12 @@ public class ServerGame extends Thread {
 			int r = 25;
 			for ( int i = 0 ; i < 50 ; i++ ) {
 				double degree = ( 90 ) / 180.0 * Math.PI;
-
 				chickens.add ( new Chicken ( 60 * ( i % 8 ) + 80 ,
 						75 * ( i / 8 ) + 100 ,
 						1 * Math.sin ( degree ) ,
 						1 * Math.cos ( degree ) ) );
-
-
 			}
 		}
-
 	}
 
 	public void Group4 () {
@@ -602,7 +576,6 @@ public class ServerGame extends Thread {
 			int r = 25;
 			for ( int i = 0 ; i < 60 ; i++ ) {
 				double degree = ( 90 ) / 180.0 * Math.PI;
-
 				chickens.add ( new Chicken ( 60 * ( i % 8 ) + 80 ,
 						75 * ( i / 8 ) + 100 ,
 						1 * Math.sin ( degree ) ,
